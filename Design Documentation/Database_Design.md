@@ -406,7 +406,7 @@ The "Job" table details the form of employment a person has.  This employment ma
 Field Name     | Data Type | Key Type | Default Value | Additional Constraints              | Description 
 -------------- | --------- | -------- | ------------- | ----------------------------------- | -----------
 JobID          | INTEGER   | Primary  | N/A           | NOT NULL                            | (RowID) ID of Job
-PersonID       | INTGHER   | Foreign  | N/A           | NOT NULL, Links to Person(PersonID) | Person whose job this is
+PersonID       | INTEGER   | Foreign  | N/A           | NOT NULL, Links to Person(PersonID) | Person whose job this is
 JobTitle       | TEXT      | N/A      | ''            | NOT NULL                            | Title of Job
 JobDescription | TEXT      | N/A      | ''            | NOT NULL                            | Description of Job
 PayDescription | TEXT      | N/A      | '?'           | NOT NULL                            | Description of Pay or '?' if pay is unknown
