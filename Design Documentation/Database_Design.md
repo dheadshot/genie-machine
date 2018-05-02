@@ -35,14 +35,14 @@ Field Name     | Data Type | Key Type | Default Value | Additional Constraints  
 DateID         | INTEGER   | Primary  | N/A           | NOT NULL                                   | (RowID) ID
 DateTypeID     | TEXT      | Foreign  | 'AT'          | NOT NULL, Links to DateType(DateTypeID)    | Type of Date.  If 'BET', use '2' fields as well
 InclusiveDate1 | TEXT      | N/A      | NULL          | 'Y' or 'N' or NULL                         | Does the date range include the date specified, Yes or No?  (NULL for "At" dates)
-Year1          | TEXT      | N/A      | '????'        | NOT NULL                                   | 4 digits, replace any digit with '?' if unknown (e.g. 194? for between 1940 and 1949)
+Year1          | TEXT      | N/A      | '????'        | NOT NULL                                   | At least 4 digits, replace any digit with '?' if unknown (e.g. 194? for between 1940 and 1949)
 Month1         | INTEGER   | N/A      | NULL          |                                            | Month number or NULL if unknown
 Day1           | INTEGER   | N/A      | NULL          |                                            | Day number or NULL if unknown
 Cal1TypeID     | INTEGER   | Foreign  | 1             | NOT NULL, Links to CalendarType(CalTypeID) | Type of Calendar specified
 Comment1       | TEXT      | N/A      | ''            |                                            | Comment on the Date
 Source1ID      | INTEGER   | Foreign  | NULL          | Links to Source(SourceID)                  | Source for Date 1 (or NULL if none)
 InclusiveDate2 | TEXT      | N/A      | NULL          | 'Y' or 'N' or NULL                         | Only used if DateTypeID is 'BET', otherwise NULL; Does the date range include the date specified, Yes or No?  (NULL also for "At" dates)
-Year2          | TEXT      | N/A      | NULL          |                                            | Only used if DateTypeID is 'BET', otherwise NULL; 4 digits, replace any digit with '?' if unknown (e.g. 194? for between 1940 and 1949)
+Year2          | TEXT      | N/A      | NULL          |                                            | Only used if DateTypeID is 'BET', otherwise NULL; At least 4 digits, replace any digit with '?' if unknown (e.g. 194? for between 1940 and 1949)
 Month2         | INTEGER   | N/A      | NULL          |                                            | Only used if DateTypeID is 'BET', otherwise NULL; Month number or NULL also if unknown
 Day2           | INTEGER   | N/A      | NULL          |                                            | Only used if DateTypeID is 'BET', otherwise NULL; Day number or NULL also if unknown
 Cal2TypeID     | INTEGER   | Foreign  | NULL          | Links to CalendarType(CalTypeID)           | Only used if DateTypeID is 'BET', otherwise NULL; Type of Calendar specified
