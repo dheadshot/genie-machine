@@ -34,7 +34,7 @@ Field Name     | Data Type | Key Type | Default Value | Additional Constraints  
 -------------- | --------- | -------- | ------------- | ------------------------------------------ | -----------
 DateID         | INTEGER   | Primary  | N/A           | NOT NULL                                   | (RowID) ID
 DateTypeID     | TEXT      | Foreign  | 'AT'          | NOT NULL, Links to DateType(DateTypeID)    | Type of Date.  If 'BET', use '2' fields as well
-InclusiveDate1 | TEXT      | N/A      | NULL          | 'Y' or 'N' or NULL                         | Does the date range include the date specified, Yes or No?  (NULL for "At" dates)
+InclusiveDate1 | TEXT      | N/A      | NULL          | 'Y' or 'N' or NULL                         | Does the date range include the date specified, Yes or No?  (NULL for "At" and "About" dates)
 Year1          | TEXT      | N/A      | '????'        | NOT NULL                                   | At least 4 digits, replace any digit with '?' if unknown (e.g. 194? for between 1940 and 1949)
 Month1         | INTEGER   | N/A      | NULL          |                                            | Month number or NULL if unknown
 Day1           | INTEGER   | N/A      | NULL          |                                            | Day number or NULL if unknown
@@ -81,7 +81,7 @@ The "CalendarType" table details the type of calendar used for the date specifie
 Field Name   | Data Type | Key Type | Default Value | Additional Constraints | Description 
 ------------ | --------- | -------- | ------------- | ---------------------- | -----------
 CalTypeID    | INTEGER   | Primary  | N/A           | NOT NULL               | (RowID) Index of the types
-CalTypeName  | TEXT      | N/A      | ''            | NOIT NULL, UNIQUE      | Names of the types
+CalTypeName  | TEXT      | N/A      | ''            | NOT NULL, UNIQUE       | Names of the types
 
 ### Predefined Contents
 
@@ -108,14 +108,14 @@ Field Name     | Data Type | Key Type | Default Value | Additional Constraints  
 -------------- | --------- | -------- | ------------- | ------------------------------------------ | -----------
 AgeID          | INTEGER   | Primary  | N/A           | NOT NULL                                   | (RowID) ID
 AgeTypeID      | TEXT      | Foreign  | 'AT'          | NOT NULL, Links to AgeType(AgeTypeID)      | Type of Age.  If 'BET', use '2' fields as well
-InclusiveAge1  | TEXT      | N/A      | 'Y'           | 'Y' or 'N' or NULL                         | Does the age range include the age specified, Yes or No?  (NULL for "AT" ages, otherwise default Yes)
+InclusiveAge1  | TEXT      | N/A      | 'Y'           | 'Y' or 'N' or NULL                         | Does the age range include the age specified, Yes or No?  (NULL for "AT" and "ABT" ages, otherwise default Yes)
 UseMonths1     | INTEGER   | N/A      | 1             | NOT NULL, 0 or 1                           | Are we using the Months field?  Specifically, the age could only be known in the days:years form.
 NumYears1      | INTEGER   | N/A      | NULL          |                                            | Number of Years (or NULL if unknown)
 NumMonths1     | INTEGER   | N/A      | NULL          |                                            | Number of Months (or NULL if unknown or not applicable (see UseMonths1 field))
 NumDays1       | INTEGER   | N/A      | NULL          |                                            | Number of Days (or NULL if unknown)
 Comment1       | TEXT      | N/A      | NULL          |                                            | Comment on the Age
 Source1ID      | INTEGER   | Foreign  | NULL          | Links to Source(SourceID)                  | Source for Age 1 (or NULL if none)
-InclusiveAge2  | TEXT      | N/A      | NULL          | 'Y' or 'N' or NULL                         | Only used if AgeTypeID is 'BET', otherwise NULL; Does the age range include the age specified, Yes or No?  (NULL also for "At" ages, otherwise default Yes)
+InclusiveAge2  | TEXT      | N/A      | NULL          | 'Y' or 'N' or NULL                         | Only used if AgeTypeID is 'BET', otherwise NULL; Does the age range include the age specified, Yes or No?  (NULL default for most AgeTypeIDs, otherwise default Yes)
 UseMonths2     | INTEGER   | N/A      | NULL          | 0 or 1 or NULL                             | Only used if AgeTypeID is 'BET', otherwise NULL; Are we using the Months field?  Specifically, the age could only be known in the days:years form.
 NumYears2      | INTEGER   | N/A      | NULL          |                                            | Only used if AgeTypeID is 'BET', otherwise NULL; Number of Years (or NULL also if unknown)
 NumMonths2     | INTEGER   | N/A      | NULL          |                                            | Only used if AgeTypeID is 'BET', otherwise NULL; Number of Months (or NULL also if unknown or not applicable (see UseMonths2 field))
@@ -195,7 +195,7 @@ PersonID       | INTEGER   | Foreign  | N/A           | NOT NULL, Links to Perso
 BeliefTypeID   | INTEGER   | Foreign  | 1             | NOT NULL, Links to BeliefType(BeliefTypeID) | The type of Belief System
 Description    | TEXT      | N/A      | ''            | NOT NULL                                    | Description of Belief System
 StartDate      | INTEGER   | Foreign  | N/A           | NOT NULL, Links to Date(DateID)             | When the person started believing this (links to '?' values if unknown)
-EndDate        | INTEGER   | Foreign  | NULL          | Links to Date(DateID)                       | When the person stopped believeing this, or NULL if they never stopped (links to '?' values if unknown)
+EndDate        | INTEGER   | Foreign  | NULL          | Links to Date(DateID)                       | When the person stopped believing this, or NULL if they never stopped (links to '?' values if unknown)
 Comments       | TEXT      | N/A      | NULL          |                                             | Comments
 SourceID       | INTEGER   | Foreign  | NULL          | Links to Source(SourceID)                   | Source (or NULL if none)
 
