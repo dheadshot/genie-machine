@@ -121,6 +121,142 @@ CREATE TABLE BeliefType (
   BeliefTypeTxt TEXT NOT NULL DEFAULT '' UNIQUE -- The belief system type
 );
 
+CREATE TABLE Nationality (
+  NatID INTEGER PRIMARY KEY NOT NULL,      -- (RowID) ID of Nationality/Tribal Affiliation
+  PersonID INTEGER NOT NULL REFERENCES Person (PersonID), -- The person for whom this Nationality/Tribal Affiliation applies
+  AffilTypeID INTEGER NOT NULL DEFAULT 2 REFERENCES AffilType (AffilTypeID), -- Type of Affiliation
+  Description TEXT NOT NULL DEFAULT '',    -- Description of Affiliation
+  IDCode TEXT DEFAULT NULL,                -- Identity Code (or NULL if not applicable, or '?' if unknown)
+  StartDate INTEGER NOT NULL REFERENCES Date (DateID), -- The start date of the Affiliation
+  EndDate INTEGER DEFAULT NULL REFERENCES Date (DateID), -- The end date of the affiliation, or NULL if is hasn't ended.
+  ConvertedToID INTEGER DEFAULT NULL REFERENCES Nationality (NatID), -- The ID of the nationality it changed into if a nationality/affiliation type was converted to another, otherwise NULL.
+  Comments TEXT DEFAULT NULL,              -- Any comments about this
+  SourceID INTEGER DEFAULT NULL REFERENCES Source (SourceID) -- Source (or NULL if none)
+);
+
+CREATE TABLE AffilType (
+  AffilTypeID INTEGER PRIMARY KEY NOT NULL, -- (RowID) ID of the Affilliation Type
+  AffilTypeTxt TEXT NOT NULL DEFAULT '' UNIQUE -- Affilliation Type in full
+);
+
+CREATE TABLE AdoptFoster (
+  AdoptFosterID INTEGER PRIMARY KEY NOT NULL, -- (RowID) Adoption/Fosterhood ID
+  ByRelationship INTEGER DEFAULT NULL REFERENCES Relationship (RelID), -- Adopted by Relationship ID (or NULL if unknown)
+  PersonID INTEGER NOT NULL REFERENCES Person (PersonID), -- The person who was adopted
+  AdFosDate INTEGER NOT NULL REFERENCES Date (DateID), -- The date of the Adoption/Fosterhood.  Linked values are '?' if unknown
+  AdFosEndDate INTEGER DEFAULT NULL REFERENCES Date (DateID), -- The date the Adoption/Fosterhood ended or NULL if Not Applicable.  Linked values are '?' if unknown
+  AdoptTypeID INTEGER NOT NULL DEFAULT 1 REFERENCES AdoptType (AdoptTypeID), -- The type of adoption or fosterhood
+  Description TEXT NOT NULL DEFAULT '',    -- Description of the Adoption/Fosterhood
+  PersonTypeID INTEGER DEFAULT 0 NOT NULL REFERENCES AdoptPersonType (AdPersonTypeID), -- Code for the person in the relationship adopting/fostering this person.
+  SourceID INTEGER DEFAULT NULL REFERENCES Source (SourceID) -- Source (or NULL if none)
+);
+
+CREATE TABLE AdoptPersonType (
+  AdPersonTypeID INT PRIMARY KEY NOT NULL UNIQUE, -- ID for person adopted type (NOT RowID!)
+  AdPersonTypeDesc TEXT NOT NULL DEFAULT '' UNIQUE -- Description of person adopted type
+);
+
+CREATE TABLE AdoptType (
+  AdoptTypeID INTEGER PRIMARY KEY NOT NULL, -- (RowID) Adoption/Fosterhood Type ID
+  AdoptTypeTxt TEXT NOT NULL DEFAULT '' UNIQUE -- Full Adoption/Fosterhood Type
+);
+
+CREATE TABLE Relationship (
+  RelID INTEGER PRIMARY KEY NOT NULL,      -- (RowID) ID of the relationship
+  Person1ID INTEGER NOT NULL REFERENCES Person (PersonID), -- First person in relationship
+  Person2ID INTEGER DEFAULT NULL REFERENCES Person (PersonID) CHECK (Person2ID ISNULL or Person2ID IS NOT NULL or (Person2ID ISNULL and RelTypeID = 14)), Second person in relationship or NULL if unknown (or also NULL if N/A in adoption)
+  RelTypeID INTEGER NOT NULL DEFAULT 7 REFERENCES RelType (RelTypeID), -- The type of relationship
+  IsRomantic INTEGER DEFAULT (CASE WHEN RelTypeID < 3 THEN 0 WHEN RelTypeID < 9 THEN 1 WHEN RelTypeID = 10 THEN 1 ELSE 0 END) CHECK (IsRomantic IN (NULL, 0, 1)), -- Is the relationship a romantic or a platonic one? (NULL if unknown)
+  Description TEXT NOT NULL DEFAULT '',    -- Description of the Relationship
+  RelEndTypeID INTEGER NOT NULL DEFAULT 4 REFERENCES RelEndType (RelEndTypeID), -- The way the relationship ended
+  RelEndDesc TEXT DEFAULT '' NOT NULL,     -- Description of how the relationship ended
+  ConvRelID INTEGER DEFAULT NULL REFERENCES Relationship (RelID) CHECK (ConvRelID ISNULL or (ConvRelID IS NOT NULL and RelEndTypeID = 3)), -- If the Relationship End Type ID is 3 (converted), this links to the relationship it converted into.  May need a placeholder?
+  Notes TEXT DEFAULT NULL,                 -- Any notes, however unofficial, on this relationship
+  SourceID INTEGER DEFAULT NULL REFERENCES Source (SourceID) -- Source (or NULL if none)
+);
+
+CREATE TABLE RelType (
+  RelTypeID INTEGER PRIMARY KEY NOT NULL,  -- (RowID) ID of the Relationship Type
+  RelTypeTxt TEXT NOT NULL DEFAULT '' UNIQUE, -- Full Relationship Type
+  CanHaveChild INTEGER NOT NULL DEFAULT 1 CHECK (CanHaveChild IN (0, 1)) -- Can this relationship type give birth to a child?
+);
+
+CREATE TABLE RelEndType (
+  RelEndTypeID INTEGER PRIMARY KEY NOT NULL, -- (RowID) ID of the Relationship End Type
+  RelEndTypeTxt TEXT NOT NULL DEFAULT '' UNIQUE -- Full Relationship End Type
+);
+
+CREATE TABLE Job (
+  JobID INTEGER PRIMARY KEY NOT NULL,      -- (RowID) ID of Job
+  PersonID INTEGER NOT NULL REFERENCES Person (PersonID), -- Person whose job this is
+  JobTitle TEXT NOT NULL DEFAULT '',       -- Title of Job
+  JobDescription TEXT NOT NULL DEFAULT '', -- Description of Job
+  PayDescription TEXT NOT NULL DEFAULT '?', -- Description of Pay or '?' if pay is unknown
+  StartDate INTEGER NOT NULL REFERENCES Date (DateID), -- Date the person started the Job
+  EndDate INTEGER DEFAULT NULL REFERENCES Date (DateID), -- Date the person ended the job (or NULL if the job is still ongoing)
+  Comments TEXT DEFAULT NULL,              -- Comments on the Job
+  SourceID INTEGER DEFAULT NULL REFERENCES Source(SourceID) -- Source (or NULL if none)
+);
+
+CREATE TABLE Address (
+  AddrID INTEGER PRIMARY KEY NOT NULL,     -- (RowID) ID of Address
+  Description TEXT NOT NULL DEFAULT '',    -- Description of Address
+  AddrNameNum TEXT NOT NULL DEFAULT '?',   -- Address Name or Number (or '?' if unknown)
+  AddrLine2 TEXT DEFAULT NULL,             -- Address Line 2 (or NULL if not applicable)
+  AddrRoad TEXT DEFAULT NULL,              -- Address Road (or '?' if unknown, or NULL if not applicable)
+  AddrSettlement TEXT DEFAULT NULL,        -- Settlement (or '?' if unknown, or NULL if not applicable)
+  AddrBorough TEXT DEFAULT NULL,           -- Borough  (or '?' if unknown, or NULL if not applicable)
+  AddrCounty TEXT DEFAULT NULL,            -- County  (or '?' if unknown, or NULL if not applicable)
+  AddrState TEXT DEFAULT NULL,             -- State  (or '?' if unknown, or NULL if not applicable)
+  AddrPostCode TEXT DEFAULT NULL,          -- Postal Code or similar  (or '?' if unknown, or NULL if not applicable)
+  AddrCountry TEXT DEFAULT NULL,           -- Country  (or '?' if unknown, or NULL if not applicable)
+  Latitude REAL DEFAULT NULL,              -- Latitude (or NULL if unknown)
+  Longitude REAL DEFAULT NULL,             -- Longitude (or NULL if unknown)
+  FixTelNum TEXT DEFAULT NULL,             -- Fixed (land-line) Telephone Number  (or '?' if unknown, or NULL if not applicable)
+  Notes TEXT DEFAULT NULL,                 -- Any notes, even if unofficial
+  SourceID INTEGER DEFAULT NULL REFERENCES Source(SourceID) -- Source (or NULL if none)
+);
+
+CREATE TABLE LivingAddr (
+  LivingAddrID INTEGER PRIMARY KEY NOT NULL, -- (RowID) ID of Living Address
+  PersonID INTEGER NOT NULL REFERENCES Person (PersonID), -- Person whose address this is
+  AddrID INTEGER NOT NULL REFERENCES Address (AddrID), -- The Address
+  ArrivedDate INTEGER NOT NULL REFERENCES Date (DateID), -- Date the person arrived at the address
+  LeftDate INTEGER DEFAULT NULL REFERENCES Date (DateID), -- Date the person left the address, or NULL if they haven't left yet
+  Notes TEXT DEFAULT NULL,                 -- Any notes, however unofficial, on this residence
+  SourceID INTEGER DEFAULT NULL REFERENCES Source(SourceID) -- Source (or NULL if none)
+);
+
+CREATE TABLE WorkingAddr (
+  WorkingAddrID INTEGER PRIMARY KEY NOT NULL, -- (RowID) ID of Working Address
+  JobID INTEGER NOT NULL REFERENCES Job (JobID), -- Job at this address
+  AddrID INTEGER NOT NULL REFERENCES Address (AddrID), -- The Address
+  ArrivedDate INTEGER NOT NULL REFERENCES Date (DateID), -- Date the job arrived at the address
+  LeftDate INTEGER DEFAULT NULL REFERENCES Date (DateID), -- Date the job left the address, or NULL if it hasn't left yet
+  Description TEXT NOT NULL DEFAULT '',    -- Description of this job being at this address
+  Notes TEXT DEFAULT NULL,                 -- Any notes, however unofficial, about this job at this address
+  SourceID INTEGER DEFAULT NULL REFERENCES Source(SourceID) -- Source (or NULL if none)
+);
+
+CREATE TABLE OtherContact (
+  OtherContactID INTEGER PRIMARY KEY NOT NULL, -- (RowID) ID of the Other Contact-type Address
+  PersonID INTEGER NOT NULL REFERENCES Person (PersonID), -- Person whose contact details these are
+  StartDate INTEGER NOT NULL REFERENCES Date (DateID), -- Date the person gained these contact details
+  EndDate INTEGER DEFAULT NULL REFERENCES Date (DateID), -- Date the person lost these contact details, or NULL if they are still valid
+  ContactTypeID INTEGER NOT NULL DEFAULT 1 REFERENCES ContactType (ContactTypeID), -- Type of Contact Details
+  Description TEXT NOT NULL DEFAULT '',    -- Description of contact details
+  Data TEXT NOT NULL DEFAULT '',           -- Contact Details
+  Notes TEXT DEFAULT NULL,                 -- Any notes, however unofficial, on these contact details
+  SourceID INTEGER DEFAULT NULL REFERENCES Source(SourceID) -- Source (or NULL if none)
+);
+
+CREATE TABLE ContactType (
+  ContactTypeID INTEGER PRIMARY KEY NOT NULL, -- (RowID) ID of the Contact Type
+  ContactTypeTxt TEXT NOT NULL DEFAULT ''  -- Full Contact Type
+);
+
+
+
 ```
 
 ## Values
@@ -133,5 +269,17 @@ INSERT INTO CalendarType (CalTypeID, CalTypeName) VALUES (1, 'Gregorian'), (2, '
 INSERT INTO AgeType (AgeTypeID, AgeTypeTxt) VALUES ('AT', 'At'), ('ABT', 'About'), ('BEF', 'Before'), ('AFT', 'After'), ('BET', 'Between');
 
 INSERT INTO BeliefType (BeliefTypeID, BeliefTypeTxt) VALUES (1, 'Religion'), (2, 'Cult'), (3, 'Political'), (4, 'Other Formal'), (5, 'Informal Attribute'), (6, 'Other');
+
+INSERT INTO AffilType (AffilTypeID, AffilTypeTxt) VALUES (1, 'Tribe'), (2, 'National Citizen'), (3, 'Freedom to Remain'), (4, 'Working Visa'), (5, 'Permanent Residency'), (6, 'Other');
+
+INSERT INTO AdoptPersonType (AdPersonTypeID, AdPersonTypeDesc) VALUES (0, 'Unknown'), (1, 'Person 1 Only'), (2, 'Person 2 Only'), (3, 'Both people in relationship');
+
+INSERT INTO AdoptType (AdoptTypeID, AdoptTypeTxt) VALUES (1, 'Legal Adoption'), (2, 'Informal Adoption'), (3, 'Fosterhood'), (4, 'Other');
+
+INSERT INTO RelType (RelTypeID, RelTypeTxt, CanHaveChild) VALUES (1, 'Sperm/Egg donor', 1), (2, 'Surrogate', 1), (3, 'Very Short Term Relationship', 1), (4, 'Short Term Relationship', 1), (5, 'Long Term Relationship', 1), (6, 'Formal Engagement', 1), (7, 'Marriage', 1), (8, 'Civil Partnership', 1), (9, 'Friends', 0), (10, 'Sexual Friendship', 1), (11, 'Godparent/Godchild', 0), (12, 'Witness at marriage', 0), (13, 'Other', 1), (14, '(Dummy)', 0);
+
+INSERT INTO RelEndType (RelEndTypeID, RelEndTypeTxt) VALUES (1, 'Split'), (2, 'Death'), (3, 'Converted'), (4, 'Unknown');
+
+INSERT INTO ContactType (ContactTypeID, ContactTypeTxt), VALUES (1, 'Fixed Telephone Number'), (2, 'Mobile Telephone Number'), (3, 'Facsimile Number'), (4, 'Telex/Teleprinter Number'), (5, 'E-Mail Address'), (6, 'Web Address'), (7, 'Instant Messaging Address'), (8, 'VOIP Number/Address'), (9, 'Social Media Account'), (10, 'Other');
 
 ```

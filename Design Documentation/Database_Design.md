@@ -276,6 +276,7 @@ AdoptFosterID  | INTEGER   | Primary  | N/A           | NOT NULL                
 ByRelationship | INTEGER   | Foreign  | NULL          | Links to Relationship(RelID)                       | Adopted by Relationship ID (or NULL if unknown)
 PersonID       | INTEGER   | Foreign  | N/A           | NOT NULL, Links to Person(PersonID)                | The person who was adopted
 AdFosDate      | INTEGER   | Foreign  | N/A           | NOT NULL, Links to Date(DateID)                    | The date of the Adoption/Fosterhood.  Linked values are '?' if unknown
+AdFosEndDate   | INTEGER   | Foreign  | NULL          | Links to Date(DateID)                              | The date the Adoption/Fosterhood ended or NULL if Not Applicable.  Linked values are '?' if unknown
 AdoptTypeID    | INTEGER   | Foreign  | 1             | NOT NULL, Links to AdoptType(AdoptTypeID)          | The type of adoption or fosterhood
 Description    | TEXT      | N/A      | ''            | NOT NULL                                           | Description of the Adoption/Fosterhood
 PersonTypeID   | INTEGER   | Foreign  | 0             | NOT NULL, Links to AdoptPersonType(AdPersonTypeID) | Code for the person in the relationship adopting/fostering this person.
