@@ -255,7 +255,32 @@ CREATE TABLE ContactType (
   ContactTypeTxt TEXT NOT NULL DEFAULT ''  -- Full Contact Type
 );
 
+CREATE TABLE EducAchieve (
+  EducAchieveID INTEGER PRIMARY KEY NOT NULL, -- (RowID) Educational Achievement ID
+  PersonID INTEGER NOT NULL REFERENCES Person (PersonID), -- Person who achieved it
+  AchieveDate INTEGER NOT NULL REFERENCES Date (DateID), -- Date they achieved it
+  QualName TEXT NOT NULL DEFAULT '',       -- Qualification Name
+  QualType TEXT NOT NULL DEFAULT '',       -- Qualification Type
+  Subject TEXT DEFAULT NULL,               -- Subject of Qualification, or NULL if too general
+  Description TEXT NOT NULL DEFAULT '',    -- Description of Qualification
+  PlaceName TEXT DEFAULT NULL,             -- Place qualification was achieved or NULL if not applicable
+  PlaceAddrID INTEGER DEFAULT NULL REFERENCES Address (AddrID), -- Address of the place (or NULL if Unknown, also NULL if unapplicable (above will be NULL too in this case)).
+  Notes TEXT DEFAULT NULL,                 -- Any notes, however unofficial, about this qualification
+  SourceID INTEGER DEFAULT NULL REFERENCES Source(SourceID) -- Source (or NULL if none)
+);
 
+CREATE TABLE Event (
+  EventID INTEGER PRIMARY KEY NOT NULL,    -- (RowID) Event ID
+  PersonID INTEGER NOT NULL REFERENCES Person (PersonID), -- Person to whom the event occurred
+  EventDate INTEGER NOT NULL REFERENCES Date (DateID), -- Date of the Event
+  EventDate INTEGER DEFAULT NULL REFERENCES Age (AgeID), -- Person's age at event
+  Description TEXT NOT NULL DEFAULT '',    -- Short description of event
+  Details TEXT DEFAULT NULL,               -- Event Details (or NULL if not applicable)
+  PlaceName TEXT DEFAULT NULL,             -- Place the where the event occurred (or NULL if not applicable)
+  PlaceAddr INTEGER DEFAULT NULL REFERENCES Address (AddrID), -- Address of place the where the event occurred (or NULL if not applicable)
+  Notes TEXT DEFAULT NULL,                 -- Any notes, however unofficial, about this event
+  SourceID INTEGER DEFAULT NULL REFERENCES Source(SourceID) -- Source (or NULL if none)
+);
 
 ```
 
