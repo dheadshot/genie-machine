@@ -298,7 +298,7 @@ CREATE TABLE Source (
   InternalData TEXT DEFAULT NULL,          -- Typed Data from source, or NULL if this cannot be done.
   ExternalData TEXT DEFAULT NULL,          -- Path of external file containing source data, or NULL if not applicable
   ExtDataMIME TEXT DEFAULT NULL CHECK ((ExternalData ISNULL and ExtDataMIME ISNULL) or (ExternalData IS NOT NULL and ExtDataMIME IS NOT NULL)), -- MIME type of External Data file, or NULL if not applicable.
-  Reliability INTEGER DEFAULT NULL CHECK (IN (0, 1, 2, 3, NULL)), -- Reliability assessment of data in a scale of 0 to 3, or NULL if unknown.
+  Reliability INTEGER DEFAULT NULL CHECK (Reliability IN (0, 1, 2, 3, NULL)), -- Reliability assessment of data in a scale of 0 to 3, or NULL if unknown.
   Notes TEXT DEFAULT NULL                  -- Any notes, however unofficial, about the source.
 );
 
@@ -328,8 +328,8 @@ CREATE TABLE ISO6393 (
   Code2B TEXT DEFAULT NULL,                -- The ISO-639-2 Bibliographic code (or NULL if not available)
   Code2T TEXT DEFAULT NULL,                -- The ISO-639-2 Terminology code (or NULL if not available)
   Code1 TEXT DEFAULT NULL,                 -- The ISO-639-1 code (or NULL if not available)
-  ScopeCode TEXT NOT NULL DEFAULT 'I' CHECK (IN ('I', 'M', 'S')), -- Single letter specifying the scope of the language code: I(ndividual), M(acrolanguage), S(pecial)
-  TypeCode TEXT NOT NULL DEFAULT 'L' CHECK (IN ('A', 'C', 'E', 'H', 'L', 'S')), -- Single letter specifying the type of the language code: A(ncient), C(onstructed), E(xtinct), H(istorical), L(iving), S(pecial)
+  ScopeCode TEXT NOT NULL DEFAULT 'I' CHECK (ScopeCode IN ('I', 'M', 'S')), -- Single letter specifying the scope of the language code: I(ndividual), M(acrolanguage), S(pecial)
+  TypeCode TEXT NOT NULL DEFAULT 'L' CHECK (TypeCode IN ('A', 'C', 'E', 'H', 'L', 'S')), -- Single letter specifying the type of the language code: A(ncient), C(onstructed), E(xtinct), H(istorical), L(iving), S(pecial)
   RefName TEXT NOT NULL DEFAULT '',        -- The reference name of the language
   Comment TEXT DEFAULT NULL                -- Any comments about the language.
 );
