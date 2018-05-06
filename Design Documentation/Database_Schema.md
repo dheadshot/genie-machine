@@ -282,6 +282,62 @@ CREATE TABLE Event (
   SourceID INTEGER DEFAULT NULL REFERENCES Source(SourceID) -- Source (or NULL if none)
 );
 
+CREATE TABLE Source (
+  SourceID INTEGER PRIMARY KEY NOT NULL,   -- (RowID) Source ID
+  SourceTypeID INTEGER NOT NULL REFERENCES SourceType (SourceTypeID), -- The type of source
+  Description TEXT NOT NULL DEFAULT '',    -- Description of the source
+  FromDate INTEGER NOT NULL REFERENCES Date (DateID), -- The date from which the work, well, dates.  Links to '?' if unknown.
+  FromWork TEXT DEFAULT NULL,              -- Work the source is from (e.g. name of a book, etc).  If not applicable, is NULL.
+  SectPagePara TEXT DEFAULT NULL,          -- Section, Page and Paragraph reference or at least some way of locating source in work, or NULL if not applicable.
+  Location TEXT DEFAULT NULL,              -- Location of source (e.g. a library) or NULL if not applicable.
+  LocationAddr INTEGER DEFAULT NULL REFERENCES Address (AddrID) CHECK (LocationAddr ISNULL or LocationAddr IS NOT NULL or (LocationAddr ISNULL and Location ISNULL)), -- Address of source location, or NULL if not applicable or unknown (if unknown, above field won't be NULL).
+  CallNum TEXT DEFAULT NULL,               -- Call Number or other reference form for work in location, or '?' if unknown, or NULL if not applicable.
+  LangCodeMajor TEXT DEFAULT NULL REFERENCES ISO6393 (Code3), -- ISO 639-3 code (Major part), or NULL if not applicable.
+  LangCodeMinor TEXT DEFAULT NULL CHECK (LangCodeMinor ISNULL or LangCodeMinor IS NOT NULL or (LangCodeMinor ISNULL and LangCodeMajor ISNULL)), -- ISO 639-3 code (Minor/National part), or NULL if not applicable.
+  AccessedDate INTEGER NOT NULL REFERENCES Date (DateID), -- The date the source was accessed and/or details added to the database.
+  InternalData TEXT DEFAULT NULL,          -- Typed Data from source, or NULL if this cannot be done.
+  ExternalData TEXT DEFAULT NULL,          -- Path of external file containing source data, or NULL if not applicable
+  ExtDataMIME TEXT DEFAULT NULL CHECK ((ExternalData ISNULL and ExtDataMIME ISNULL) or (ExternalData IS NOT NULL and ExtDataMIME IS NOT NULL)), -- MIME type of External Data file, or NULL if not applicable.
+  Reliability INTEGER DEFAULT NULL CHECK (IN (0, 1, 2, 3, NULL)), -- Reliability assessment of data in a scale of 0 to 3, or NULL if unknown.
+  Notes TEXT DEFAULT NULL                  -- Any notes, however unofficial, about the source.
+);
+
+CREATE TABLE SourceType (
+  SourceTypeID INTEGER PRIMARY KEY NOT NULL, -- (RowID) Source Type ID
+  SourceTypeTxt TEXT NOT NULL DEFAULT '' UNIQUE, -- The full Source Type
+);
+
+CREATE TABLE Multimedia (
+  MultimediaID INTEGER PRIMARY KEY NOT NULL, -- (RowID) ID of Other Multimedia
+  Description TEXT NOT NULL DEFAULT '',    -- Description of the Multimedia
+  OriginDate INTEGER NOT NULL REFERENCES Date (DateID), -- Original date of the Multimedia (Linked values are '?' if unknown)
+  Data TEXT NOT NULL DEFAULT '',           -- Path of external data file containing Multimedia
+  DataMIME TEXT NOT NULL DEFAULT 'application/octet-stream', -- MIME type of the external data file
+  Notes TEXT DEFAULT NULL,                 -- Any notes, however unofficial, on the Multimedia
+);
+
+CREATE TABLE InMultimedia (
+  InMultimediaID INTEGER PRIMARY KEY NOT NULL, -- (RowID) ID of Multimedia Assignment
+  MultimediaID INTEGER NOT NULL REFERENCES Multimedia (MultimediaID), -- ID of the Other Multimedia
+  PersonID INTEGER NOT NULL REFERENCES Person (PersonID), -- ID of the person featured in the Multimedia
+  Notes TEXT DEFAULT NULL                  -- Any notes, however unofficial, about the person's role in the Multimedia
+);
+
+CREATE TABLE ISO6393 (
+  Code3 TEXT PRIMARY KEY NOT NULL UNIQUE,  -- The ISO-639-3 code
+  Code2B TEXT DEFAULT NULL,                -- The ISO-639-2 Bibliographic code (or NULL if not available)
+  Code2T TEXT DEFAULT NULL,                -- The ISO-639-2 Terminology code (or NULL if not available)
+  Code1 TEXT DEFAULT NULL,                 -- The ISO-639-1 code (or NULL if not available)
+  ScopeCode TEXT NOT NULL DEFAULT 'I' CHECK (IN ('I', 'M', 'S')), -- Single letter specifying the scope of the language code: I(ndividual), M(acrolanguage), S(pecial)
+  TypeCode TEXT NOT NULL DEFAULT 'L' CHECK (IN ('A', 'C', 'E', 'H', 'L', 'S')), -- Single letter specifying the type of the language code: A(ncient), C(onstructed), E(xtinct), H(istorical), L(iving), S(pecial)
+  RefName TEXT NOT NULL DEFAULT '',        -- The reference name of the language
+  Comment TEXT DEFAULT NULL                -- Any comments about the language.
+);
+
+CREATE TABLE MetaInfo (
+  Element TEXT PRIMARY KEY NOT NULL UNIQUE, -- Meta Information Element
+  Value TEXT DEFAULT NULL                  -- Meta Information Value
+);
 ```
 
 ## Values
@@ -307,4 +363,9 @@ INSERT INTO RelEndType (RelEndTypeID, RelEndTypeTxt) VALUES (1, 'Split'), (2, 'D
 
 INSERT INTO ContactType (ContactTypeID, ContactTypeTxt), VALUES (1, 'Fixed Telephone Number'), (2, 'Mobile Telephone Number'), (3, 'Facsimile Number'), (4, 'Telex/Teleprinter Number'), (5, 'E-Mail Address'), (6, 'Web Address'), (7, 'Instant Messaging Address'), (8, 'VOIP Number/Address'), (9, 'Social Media Account'), (10, 'Other');
 
+INSERT INTO SourceType (SourceTypeID, SourceTypeTxt) VALUES (1, 'Memory'), (2, 'Record'), (3, 'Image'), (4, 'Audio'), (5, 'Video'), (6, 'Other');
+
+INSERT INTO MetaInfo (Element, Value) VALUES ('Version', ''), ('Last_Edit', strftime('%Y-%m-%dT%H:%M:%S.%f'));
 ```
+
+See also the file ISO_639-3_Values.txt for the INSERT statement for the values of table ISO6393.

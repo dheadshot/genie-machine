@@ -1,9 +1,9 @@
 #!/bin/bash
 # This script converts the ISO 639-3 Table into an SQL "INSERT" statement.
 cat iso-639-3.tab | cut -f1 | sed "s/.*/\(\'&\'\,/" > isot1.txt
-cat iso-639-3.tab | cut -f2 | sed "s/.*/\'&\'\,/" > isot2.txt
-cat iso-639-3.tab | cut -f3 | sed "s/.*/\'&\'\,/" > isot3.txt
-cat iso-639-3.tab | cut -f4 | sed "s/.*/\'&\'\,/" > isot4.txt
+cat iso-639-3.tab | cut -f2 | sed "s/.*/\'&\'\,/" | sed "s/'',/NULL,/" > isot2.txt
+cat iso-639-3.tab | cut -f3 | sed "s/.*/\'&\'\,/" | sed "s/'',/NULL,/" > isot3.txt
+cat iso-639-3.tab | cut -f4 | sed "s/.*/\'&\'\,/" | sed "s/'',/NULL,/" > isot4.txt
 cat iso-639-3.tab | cut -f5 | sed "s/.*/\'&\'\,/" > isot5.txt
 cat iso-639-3.tab | cut -f6 | sed "s/.*/\'&\'\,/" > isot6.txt
 cat iso-639-3.tab | cut -f7 | sed "s/'/''/" | sed "s/.*/\'&\'\,/" > isot7.txt

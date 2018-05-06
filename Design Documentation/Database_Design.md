@@ -563,7 +563,7 @@ SourceID      | INTEGER   | Primary  | N/A           | NOT NULL                 
 SourceTypeID  | INTEGER   | Foreign  | N/A           | NOT NULL, Links to SourceType(SourceTypeID) | The type of source
 Description   | TEXT      | N/A      | ''            | NOT NULL                                    | Description of the source
 FromDate      | INTEGER   | Foreign  | N/A           | NOT NULL, Links to Date(DateID)             | The date from which the work, well, dates.  Links to '?' if unknown.
-FromWork      | TEXT      | N/A      | NULL          |                                             | Work the source is from (e.g. a book, etc).  If not applicable, is NULL.
+FromWork      | TEXT      | N/A      | NULL          |                                             | Work the source is from (e.g. name of a book, etc).  If not applicable, is NULL.
 SectPagePara  | TEXT      | N/A      | NULL          |                                             | Section, Page and Paragraph reference or at least some way of locating source in work, or NULL if not applicable.
 Location      | TEXT      | N/A      | NULL          |                                             | Location of source (e.g. a library) or NULL if not applicable.
 LocationAddr  | INTEGER   | Foreign  | NULL          | Links to Address(AddrID)                    | Address of source location, or NULL if not applicable or unknown (if unknown, above field won't be NULL).
@@ -609,7 +609,7 @@ Field Name   | Data Type | Key Type | Default Value              | Additional Co
 ------------ | --------- | -------- | -------------------------- | ------------------------------- | -----------
 MultimediaID | INTEGER   | Primary  | N/A                        | NOT NULL                        | (RowID) ID of Other Multimedia
 Description  | TEXT      | N/A      | ''                         | NOT NULL                        | Description of the Multimedia
-OriginDate   | INTEGER   | Foreign  | N/A                        | NOT NULL, Links to Date(DateID) | Original date of the Multimedia
+OriginDate   | INTEGER   | Foreign  | N/A                        | NOT NULL, Links to Date(DateID) | Original date of the Multimedia (Linked values are '?' if unknown)
 Data         | TEXT      | N/A      | ''                         | NOT NULL                        | Path of external data file containing Multimedia
 DataMIME     | TEXT      | N/A      | 'application/octet-stream' | NOT NULL                        | MIME type of the external data file
 Notes        | TEXT      | N/A      | NULL                       |                                 | Any notes, however unofficial, on the Multimedia
