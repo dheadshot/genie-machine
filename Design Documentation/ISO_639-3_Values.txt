@@ -1,3 +1,4 @@
+BEGIN TRANSACTION;
 INSERT INTO ISO6393
 (Code3, Code2B, Code2T, Code1, ScopeCode, TypeCode, RefName, Comment)
 VALUES
@@ -7858,3 +7859,4 @@ VALUES
 ('zyp', NULL, NULL, NULL, 'I', 'L', 'Zyphe Chin', ''),
 ('zza', 'zza', 'zza', NULL, 'M', 'L', 'Zaza', ''),
 ('zzj', NULL, NULL, NULL, 'I', 'L', 'Zuojiang Zhuang', '');
+COMMIT;
