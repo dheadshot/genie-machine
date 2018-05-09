@@ -152,7 +152,7 @@ CREATE TABLE AdoptFoster (
 );
 
 CREATE TABLE AdoptPersonType (
-  AdPersonTypeID INT PRIMARY KEY NOT NULL UNIQUE, -- ID for person adopted type (NOT RowID!)
+  AdPersonTypeID UNSIGNED INT PRIMARY KEY NOT NULL UNIQUE, -- ID for person adopted type (NOT RowID!)
   AdPersonTypeDesc TEXT NOT NULL DEFAULT '' UNIQUE -- Description of person adopted type
 );
 
@@ -164,7 +164,7 @@ CREATE TABLE AdoptType (
 CREATE TABLE Relationship (
   RelID INTEGER PRIMARY KEY NOT NULL,      -- (RowID) ID of the relationship
   Person1ID INTEGER NOT NULL REFERENCES Person (PersonID), -- First person in relationship
-  Person2ID INTEGER DEFAULT NULL REFERENCES Person (PersonID) CHECK (Person2ID ISNULL or Person2ID IS NOT NULL or (Person2ID ISNULL and RelTypeID = 14)), Second person in relationship or NULL if unknown (or also NULL if N/A in adoption)
+  Person2ID INTEGER DEFAULT NULL REFERENCES Person (PersonID) CHECK (Person2ID ISNULL or Person2ID IS NOT NULL or (Person2ID ISNULL and RelTypeID = 14)), -- Second person in relationship or NULL if unknown (or also NULL if N/A in adoption)
   RelTypeID INTEGER NOT NULL DEFAULT 7 REFERENCES RelType (RelTypeID), -- The type of relationship
   IsRomantic INTEGER DEFAULT (CASE WHEN RelTypeID < 3 THEN 0 WHEN RelTypeID < 9 THEN 1 WHEN RelTypeID = 10 THEN 1 ELSE 0 END) CHECK (IsRomantic IN (NULL, 0, 1)), -- Is the relationship a romantic or a platonic one? (NULL if unknown)
   Description TEXT NOT NULL DEFAULT '',    -- Description of the Relationship
@@ -313,7 +313,7 @@ CREATE TABLE Multimedia (
   OriginDate INTEGER NOT NULL REFERENCES Date (DateID), -- Original date of the Multimedia (Linked values are '?' if unknown)
   Data TEXT NOT NULL DEFAULT '',           -- Path of external data file containing Multimedia
   DataMIME TEXT NOT NULL DEFAULT 'application/octet-stream', -- MIME type of the external data file
-  Notes TEXT DEFAULT NULL,                 -- Any notes, however unofficial, on the Multimedia
+  Notes TEXT DEFAULT NULL                  -- Any notes, however unofficial, on the Multimedia
 );
 
 CREATE TABLE InMultimedia (
