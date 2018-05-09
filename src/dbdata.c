@@ -285,7 +285,7 @@ char newdb_sql_create_metainfo[] = "CREATE TABLE MetaInfo (
 Element TEXT PRIMARY KEY NOT NULL UNIQUE,
 Value TEXT DEFAULT NULL );";
   
-  /* Insert Data */
+/* Insert Data */
 char newdb_sql_insert_datetype[] = "INSERT INTO DateType (DateTypeID, DateTypeTxt) VALUES ('AT', 'At'), ('ABT', 'About'), ('BEF', 'Before'), ('AFT', 'After'), ('BET', 'Between');";
 char newdb_sql_insert_calendartype[] = "INSERT INTO CalendarType (CalTypeID, CalTypeName) VALUES (1, 'Gregorian'), (2, 'Julian'), (3, 'Hebrew'), (4, 'French'), (5, 'Roman'), (6, 'Unknown'), (7, 'Other');";
 char newdb_sql_insert_agetype[] = "INSERT INTO AgeType (AgeTypeID, AgeTypeTxt) VALUES ('AT', 'At'), ('ABT', 'About'), ('BEF', 'Before'), ('AFT', 'After'), ('BET', 'Between');";
@@ -8158,7 +8158,6 @@ VALUES
 ('zyp', NULL, NULL, NULL, 'I', 'L', 'Zyphe Chin', ''),
 ('zza', 'zza', 'zza', NULL, 'M', 'L', 'Zaza', ''),
 ('zzj', NULL, NULL, NULL, 'I', 'L', 'Zuojiang Zhuang', '');";
-
 
 /* Update Data */
 char newdb_sql_update_metainfo_version[] = "UPDATE MetaInfo SET Value = ? WHERE Element = 'Version';";

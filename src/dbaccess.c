@@ -64,11 +64,11 @@ int opendb(char *dbfilename, int newfile)
 
 int closedb()
 {
+  unsetdberrtext();
   if (!dbisopen) return -1;
   int rc = sqlite3_close(db);
   if (rc == SQLITE_OK || rc == SQLITE_DONE) return 1;
   lastdberr = rc;
-  unsetdberrtext();
   return 0;
 }
 
