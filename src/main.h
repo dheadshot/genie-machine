@@ -9,6 +9,7 @@
 /* --- Callback Functions --- */
 int item_exit_action_cb(Ihandle *item_exit);
 int config_recent_cb(Ihandle *ih);
+int file_menu_open_cb(Ihandle *ih);
 
 /* --- Main Functions --- */
 Ihandle *create_mainwindow_menu(Ihandle *config);
