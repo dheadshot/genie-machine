@@ -17,13 +17,13 @@ int afnexists(const char *afn)
   af = fopen(afn, "r");
   if (af)
   {
-    	fprintf(stderr, "--File '%s' Exists--\n", afn);
+    //	fprintf(stderr, "--File '%s' Exists--\n", afn);
     fclose(af);
     return 1;
   }
   if (errno == ENOENT)
   {
-    	fprintf(stderr, "--File '%s' Does Not Exist--\n", afn);
+    //	fprintf(stderr, "--File '%s' Does Not Exist--\n", afn);
     return 0;
   }
     	fprintf(stderr, "--Error %d with File '%s'--\n", errno, afn);
@@ -37,7 +37,7 @@ char* iConfigSetFilename_(Ihandle* ih)
   int app_config;
   char* home;
   
-  char *filename;//[10240] = "";
+  char *filename; //[10240] = "";
   filename = (char *) malloc(10240*sizeof(char));
   if (filename == NULL) return NULL;
   char* app_filename = IupGetAttribute(ih, "APP_FILENAME");

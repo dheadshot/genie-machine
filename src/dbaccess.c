@@ -58,7 +58,7 @@ int opendb(char *dbfilename, int newfile)
     sqlite3_close(db);
     return 0;
   }
-  dbopen = 1;
+  dbisopen = 1;
   return 1;
 }
 
@@ -77,7 +77,7 @@ int initnewdb()
   /* Initialise a newly created database with the correct tables and initial values */
   lastdberr = 0;
   unsetdberrtext();
-  if (!dbopen) return 0;
+  if (!dbisopen) return 0;
   int rc = 0;
   unsigned int rl = 0;
   char *errmsg;

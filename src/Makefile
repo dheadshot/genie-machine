@@ -8,7 +8,7 @@ else
 LIBS += -liup ${LINUXLIBS}
 endif
 
-LIBS += -liupimglib -lim -liupim -lcd -liupcd
+LIBS += -liupimglib -lim -liupim -lcd -liupcd -lsqlite3
 
 DEFS += -DUNICODE -DUTF8MODE=YES
 
