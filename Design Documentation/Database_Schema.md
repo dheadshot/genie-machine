@@ -166,7 +166,7 @@ CREATE TABLE Relationship (
   Person1ID INTEGER NOT NULL REFERENCES Person (PersonID), -- First person in relationship
   Person2ID INTEGER DEFAULT NULL REFERENCES Person (PersonID) CHECK (Person2ID ISNULL or Person2ID IS NOT NULL or (Person2ID ISNULL and RelTypeID = 14)), -- Second person in relationship or NULL if unknown (or also NULL if N/A in adoption)
   RelTypeID INTEGER NOT NULL DEFAULT 7 REFERENCES RelType (RelTypeID), -- The type of relationship
-  IsRomantic INTEGER DEFAULT (CASE WHEN RelTypeID < 3 THEN 0 WHEN RelTypeID < 9 THEN 1 WHEN RelTypeID = 10 THEN 1 ELSE 0 END) CHECK (IsRomantic IN (NULL, 0, 1)), -- Is the relationship a romantic or a platonic one? (NULL if unknown)
+  IsRomantic INTEGER DEFAULT 1 CHECK (IsRomantic IN (NULL, 0, 1)), -- Is the relationship a romantic or a platonic one? (NULL if unknown)
   Description TEXT NOT NULL DEFAULT '',    -- Description of the Relationship
   RelEndTypeID INTEGER NOT NULL DEFAULT 4 REFERENCES RelEndType (RelEndTypeID), -- The way the relationship ended
   RelEndDesc TEXT DEFAULT '' NOT NULL,     -- Description of how the relationship ended
