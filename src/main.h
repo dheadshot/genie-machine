@@ -6,8 +6,14 @@
 #include <iup/iup.h>
 #include <iup/iup_config.h>
 
+/* --- Helper Functions --- */
+int selectfile(Ihandle *parentdlg, int isopen);
+int populatemainlists(Ihandle *ih);
+void donewfile(Ihandle *ih);
+
 /* --- Callback Functions --- */
 int item_exit_action_cb(Ihandle *item_exit);
+int item_new_action_cb(Ihandle *item_new);
 int config_recent_cb(Ihandle *ih);
 int file_menu_open_cb(Ihandle *ih);
 

@@ -316,3 +316,9 @@ unsigned long utf8offset(const char *utf8str)
   }
   return utf32o;
 }
+
+unsigned long sstrlen(const char *a)
+{
+  if (!a) return 0;
+  return strlen(a);
+}

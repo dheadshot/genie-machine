@@ -45,63 +45,64 @@
 #ifndef __DBDATA_DECLARE__
 
 
-extern char *newdb_sql_begin;
-extern char *newdb_sql_commit;
-extern char *newdb_sql_vacuum;
+extern char newdb_sql_begin[];
+extern char newdb_sql_commit[];
+extern char newdb_sql_vacuum[];
 
-extern char *newdb_sql_pragma_foreign_keys_on;
-extern char *newdb_sql_pragma_foreign_keys_off;
+extern char newdb_sql_pragma_foreign_keys_on[];
+extern char newdb_sql_pragma_foreign_keys_off[];
 
-extern char *newdb_sql_create_person;
-extern char *newdb_sql_create_date;
-extern char *newdb_sql_create_datetype;
-extern char *newdb_sql_create_calendartype;
-extern char *newdb_sql_create_age;
-extern char *newdb_sql_create_agetype;
-extern char *newdb_sql_create_personname;
-extern char *newdb_sql_create_physdesc;
-extern char *newdb_sql_create_beliefs;
-extern char *newdb_sql_create_belieftype;
-extern char *newdb_sql_create_nationality;
-extern char *newdb_sql_create_affiltype;
-extern char *newdb_sql_create_adoptfoster;
-extern char *newdb_sql_create_adoptpersontype;
-extern char *newdb_sql_create_adopttype;
-extern char *newdb_sql_create_relationship;
-extern char *newdb_sql_create_reltype;
-extern char *newdb_sql_create_relendtype;
-extern char *newdb_sql_create_job;
-extern char *newdb_sql_create_address;
-extern char *newdb_sql_create_livingaddr;
-extern char *newdb_sql_create_workingaddr;
-extern char *newdb_sql_create_othercontact;
-extern char *newdb_sql_create_contacttype;
-extern char *newdb_sql_create_educachieve;
-extern char *newdb_sql_create_event;
-extern char *newdb_sql_create_source;
-extern char *newdb_sql_create_sourcetype;
-extern char *newdb_sql_create_multimedia;
-extern char *newdb_sql_create_inmultimedia;
-extern char *newdb_sql_create_iso6393;
-extern char *newdb_sql_create_metainfo;
+extern char newdb_sql_create_person[];
+extern char newdb_sql_create_date[];
+extern char newdb_sql_create_datetype[];
+extern char newdb_sql_create_calendartype[];
+extern char newdb_sql_create_age[];
+extern char newdb_sql_create_agetype[];
+extern char newdb_sql_create_personname[];
+extern char newdb_sql_create_physdesc[];
+extern char newdb_sql_create_beliefs[];
+extern char newdb_sql_create_belieftype[];
+extern char newdb_sql_create_nationality[];
+extern char newdb_sql_create_affiltype[];
+extern char newdb_sql_create_adoptfoster[];
+extern char newdb_sql_create_adoptpersontype[];
+extern char newdb_sql_create_adopttype[];
+extern char newdb_sql_create_relationship[];
+extern char newdb_sql_create_reltype[];
+extern char newdb_sql_create_relendtype[];
+extern char newdb_sql_create_job[];
+extern char newdb_sql_create_address[];
+extern char newdb_sql_create_livingaddr[];
+extern char newdb_sql_create_workingaddr[];
+extern char newdb_sql_create_othercontact[];
+extern char newdb_sql_create_contacttype[];
+extern char newdb_sql_create_educachieve[];
+extern char newdb_sql_create_event[];
+extern char newdb_sql_create_source[];
+extern char newdb_sql_create_sourcetype[];
+extern char newdb_sql_create_multimedia[];
+extern char newdb_sql_create_inmultimedia[];
+extern char newdb_sql_create_iso6393[];
+extern char newdb_sql_create_metainfo[];
 
-extern char *newdb_sql_insert_datetype;
-extern char *newdb_sql_insert_calendartype;
-extern char *newdb_sql_insert_agetype;
-extern char *newdb_sql_insert_belieftype;
-extern char *newdb_sql_insert_affiltype;
-extern char *newdb_sql_insert_adoptpersontype;
-extern char *newdb_sql_insert_adopttype;
-extern char *newdb_sql_insert_reltype;
-extern char *newdb_sql_insert_relendtype;
-extern char *newdb_sql_insert_contacttype;
-extern char *newdb_sql_insert_sourcetype;
-extern char *newdb_sql_insert_metainfo;
-extern char *newdb_sql_insert_iso6393;
+extern char newdb_sql_insert_datetype[];
+extern char newdb_sql_insert_calendartype[];
+extern char newdb_sql_insert_agetype[];
+extern char newdb_sql_insert_belieftype[];
+extern char newdb_sql_insert_affiltype[];
+extern char newdb_sql_insert_adoptpersontype[];
+extern char newdb_sql_insert_adopttype[];
+extern char newdb_sql_insert_reltype[];
+extern char newdb_sql_insert_relendtype[];
+extern char newdb_sql_insert_contacttype[];
+extern char newdb_sql_insert_sourcetype[];
+extern char newdb_sql_insert_metainfo[];
+extern char newdb_sql_insert_iso6393[];
 
-extern char *newdb_sql_update_metainfo_version;
-extern char *newdb_sql_update_metainfo_last_edit;
+extern char newdb_sql_update_metainfo_version[];
+extern char newdb_sql_update_metainfo_last_edit[];
 
+extern char sql_select_mainpersonlist[];
 
 #endif
 

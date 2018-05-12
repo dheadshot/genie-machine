@@ -13,5 +13,6 @@ long *str_find(const char *str, const char *str_to_find, int casesensitive);
 long bytecountchars(const char *ctext, long ccount);
 char *utf8char(unsigned long utf32char);
 unsigned long utf8offset(const char *utf8str);
+unsigned long sstrlen(const char *a); /* Safe StrLen */
 
 #endif

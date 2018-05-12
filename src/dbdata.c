@@ -11,9 +11,10 @@ char newdb_sql_commit[] = "COMMIT;";
 char newdb_sql_vacuum[] = "VACUUM;";
 
 /* Pragmas */
-char newdb_sql_pragma_foreign_keys_on[] = "PRAGMA foreign_keys = ON;";
-char newdb_sql_pragma_foreign_keys_off[] = "PRAGMA foreign_keys = OFF;";
+char newdb_sql_pragma_foreign_keys_on[28] = "PRAGMA foreign_keys = ON;";
+char newdb_sql_pragma_foreign_keys_off[28] = "PRAGMA foreign_keys = OFF;";
 
+/* ------------------------- New DB ------------------------------- */
 /* Create Tables */
 char newdb_sql_create_person[] = "CREATE TABLE Person ("
 "PersonID INTEGER PRIMARY KEY NOT NULL,"
@@ -35,18 +36,19 @@ char newdb_sql_create_person[] = "CREATE TABLE Person ("
 char newdb_sql_create_date[] = "CREATE TABLE Date ("
 "DateID INTEGER PRIMARY KEY NOT NULL,"
 "DateTypeID TEXT DEFAULT 'AT' NOT NULL REFERENCES DateType (DateTypeID),"
+"InclusiveDate1 TEXT DEFAULT NULL CHECK ((InclusiveDate1 ISNULL and (DateTypeID = 'AT' or DateTypeID = 'ABT')) or InclusiveDate1 = 'N' or InclusiveDate1 = 'Y'),"
 "Year1 TEXT NOT NULL DEFAULT '????',"
 "Month1 INTEGER DEFAULT NULL,"
 "Day1 INTEGER DEFAULT NULL,"
 "Cal1TypeID INTEGER NOT NULL DEFAULT 1 REFERENCES CalendarType (CalTypeID),"
 "Comment1 TEXT DEFAULT '',"
 "Source1ID INTEGER DEFAULT NULL REFERENCES Source (SourceID),"
-"InclusiveDate2 TEXT DEFAULT (CASE WHEN DateTypeID IS NOT 'BET' THEN NULL ELSE 'N' END) CHECK ((InclusiveDate2 = NULL and DateTypeID IS NOT 'BET') or (DateTypeID = 'BET' and (InclusiveDate2 = 'N' or InclusiveDate2 = 'Y'))),"
-"Year2 TEXT DEFAULT (CASE WHEN DateTypeID IS NOT 'BET' THEN NULL ELSE '????' END) CHECK (Year2 ISNULL or DateTypeID = 'BET'),"
+"InclusiveDate2 TEXT DEFAULT NULL CHECK ((InclusiveDate2 = NULL and DateTypeID IS NOT 'BET') or (DateTypeID = 'BET' and (InclusiveDate2 = 'N' or InclusiveDate2 = 'Y'))),"
+"Year2 TEXT DEFAULT NULL CHECK (Year2 ISNULL or DateTypeID = 'BET'),"
 "Month2 INTEGER DEFAULT NULL CHECK (Month2 ISNULL or DateTypeID = 'BET'),"
 "Day2 INTEGER DEFAULT NULL CHECK (Day2 ISNULL or DateTypeID = 'BET'),"
-"Cal2TypeID INTEGER DEFAULT (CASE WHEN DateTypeID IS NOT 'BET' THEN NULL ELSE 1 END) REFERENCES CalendarType (CalTypeID) CHECK (Cal2TypeID ISNULL or DateTypeID = 'BET'),"
-"Comment2 TEXT DEFAULT (CASE WHEN DateTypeID IS NOT 'BET' THEN NULL ELSE '' END),"
+"Cal2TypeID INTEGER DEFAULT NULL REFERENCES CalendarType (CalTypeID) CHECK (Cal2TypeID ISNULL or DateTypeID = 'BET'),"
+"Comment2 TEXT DEFAULT NULL,"
 "Source2ID INTEGER DEFAULT NULL REFERENCES Source (SourceID) CHECK (Source2ID ISNULL or (DateTypeID = 'BET' and Source2ID ISNULL) or (DateTypeID = 'BET' and Source2ID IS NOT NULL)) );";
 char newdb_sql_create_datetype[] = "CREATE TABLE DateType ("
 "DateTypeID TEXT PRIMARY KEY NOT NULL,"
@@ -57,15 +59,15 @@ char newdb_sql_create_calendartype[] = "CREATE TABLE CalendarType ("
 char newdb_sql_create_age[] = "CREATE TABLE Age ("
 "AgeID INTEGER PRIMARY KEY NOT NULL,"
 "AgeTypeID TEXT NOT NULL DEFAULT 'AT' REFERENCES AgeType (AgeTypeID),"
-"InclusiveAge1 TEXT DEFAULT (CASE AgeTypeID WHEN 'AT' THEN NULL WHEN 'ABT' THEN NULL ELSE 'Y' END) CHECK ((InclusiveAge1 ISNULL and (AgeTypeID = 'AT' or AgeTypeID = 'ABT')) or InclusiveAge1 = 'Y' or InclusiveAge1 = 'N'),"
+"InclusiveAge1 TEXT DEFAULT 'Y' CHECK ((InclusiveAge1 ISNULL and (AgeTypeID = 'AT' or AgeTypeID = 'ABT')) or InclusiveAge1 = 'Y' or InclusiveAge1 = 'N'),"
 "UseMonths1 INTEGER DEFAULT 1 NOT NULL CHECK (UseMonths1 IN (0, 1)),"
 "NumYears1 INTEGER DEFAULT NULL CHECK (NumYears1 >= 0 or NumYears1 ISNULL),"
 "NumMonths1 INTEGER DEFAULT NULL CHECK (NumMonths1 >= 0 or NumMonths1 ISNULL or (NumMonths1 ISNULL and UseMonths1 = 0)),"
 "NumDays1 INTEGER DEFAULT NULL CHECK (NumDays1 >= 0 or NumDays1 ISNULL),"
 "Comment1 TEXT DEFAULT NULL,"
 "Source1ID INTEGER DEFAULT NULL REFERENCES Source (SourceID),"
-"InclusiveAge2 TEXT DEFAULT (CASE WHEN AgeTypeID IS NOT 'BET' THEN NULL ELSE 'Y' END) CHECK ((InclusiveAge2 ISNULL and AgeType IS NOT 'BET') or (AgeType IS 'BET' and (InclusiveAge2 = 'Y' or InclusiveAge2 = 'N'))),"
-"UseMonths2 INTEGER DEFAULT (CASE WHEN AgeTypeID IS NOT 'BET' THEN NULL ELSE 1 END) CHECK ((AgeTypeID IS NOT 'BET' and UseMonths2 IS NULL) or UseMonths2 IN (0, 1)),"
+"InclusiveAge2 TEXT DEFAULT NULL CHECK ((InclusiveAge2 ISNULL and AgeTypeID IS NOT 'BET') or (AgeTypeID IS 'BET' and (InclusiveAge2 = 'Y' or InclusiveAge2 = 'N'))),"
+"UseMonths2 INTEGER DEFAULT NULL CHECK ((AgeTypeID IS NOT 'BET' and UseMonths2 IS NULL) or UseMonths2 IN (0, 1)),"
 "NumYears2 INTEGER DEFAULT NULL CHECK ((AgeTypeID IS NOT 'BET' and NumYears2 IS NULL) or NumYears2 ISNULL or NumYears2 >= 0),"
 "NumMonths2 INTEGER DEFAULT NULL CHECK ((AgeTypeID IS NOT 'BET' and NumMonths2 ISNULL) or (UseMonths2 = 0 and NumMonths2 ISNULL) or NumMonths2 ISNULL or NumMonths2 >= 0),"
 "NumDays2 INTEGER DEFAULT NULL CHECK ((AgeTypeID IS NOT 'BET' and NumDays2 ISNULL) or NumDays2 ISNULL or NumDays2 >= 0),"
@@ -145,7 +147,7 @@ char newdb_sql_create_relationship[] = "CREATE TABLE Relationship ("
 "Person1ID INTEGER NOT NULL REFERENCES Person (PersonID),"
 "Person2ID INTEGER DEFAULT NULL REFERENCES Person (PersonID) CHECK (Person2ID ISNULL or Person2ID IS NOT NULL or (Person2ID ISNULL and RelTypeID = 14)),"
 "RelTypeID INTEGER NOT NULL DEFAULT 7 REFERENCES RelType (RelTypeID),"
-"IsRomantic INTEGER DEFAULT (CASE WHEN RelTypeID < 3 THEN 0 WHEN RelTypeID < 9 THEN 1 WHEN RelTypeID = 10 THEN 1 ELSE 0 END) CHECK (IsRomantic IN (NULL, 0, 1)),"
+"IsRomantic INTEGER DEFAULT 1 CHECK (IsRomantic IN (NULL, 0, 1)),"
 "Description TEXT NOT NULL DEFAULT '',"
 "RelEndTypeID INTEGER NOT NULL DEFAULT 4 REFERENCES RelEndType (RelEndTypeID),"
 "RelEndDesc TEXT DEFAULT '' NOT NULL,"
@@ -232,7 +234,7 @@ char newdb_sql_create_event[] = "CREATE TABLE Event ("
 "EventID INTEGER PRIMARY KEY NOT NULL,"
 "PersonID INTEGER NOT NULL REFERENCES Person (PersonID),"
 "EventDate INTEGER NOT NULL REFERENCES Date (DateID),"
-"EventDate INTEGER DEFAULT NULL REFERENCES Age (AgeID),"
+"AgeAtEvent INTEGER DEFAULT NULL REFERENCES Age (AgeID),"
 "Description TEXT NOT NULL DEFAULT '',"
 "Details TEXT DEFAULT NULL,"
 "PlaceName TEXT DEFAULT NULL,"
@@ -259,7 +261,7 @@ char newdb_sql_create_source[] = "CREATE TABLE Source ("
 "Notes TEXT DEFAULT NULL );";
 char newdb_sql_create_sourcetype[] = "CREATE TABLE SourceType ("
 "SourceTypeID INTEGER PRIMARY KEY NOT NULL,"
-"SourceTypeTxt TEXT NOT NULL DEFAULT '' UNIQUE,);";
+"SourceTypeTxt TEXT NOT NULL DEFAULT '' UNIQUE);";
 char newdb_sql_create_multimedia[] = "CREATE TABLE Multimedia ("
 "MultimediaID INTEGER PRIMARY KEY NOT NULL,"
 "Description TEXT NOT NULL DEFAULT '',"
@@ -295,7 +297,7 @@ char newdb_sql_insert_adoptpersontype[] = "INSERT INTO AdoptPersonType (AdPerson
 char newdb_sql_insert_adopttype[] = "INSERT INTO AdoptType (AdoptTypeID, AdoptTypeTxt) VALUES (1, 'Legal Adoption'), (2, 'Informal Adoption'), (3, 'Fosterhood'), (4, 'Other');";
 char newdb_sql_insert_reltype[] = "INSERT INTO RelType (RelTypeID, RelTypeTxt, CanHaveChild) VALUES (1, 'Sperm/Egg donor', 1), (2, 'Surrogate', 1), (3, 'Very Short Term Relationship', 1), (4, 'Short Term Relationship', 1), (5, 'Long Term Relationship', 1), (6, 'Formal Engagement', 1), (7, 'Marriage', 1), (8, 'Civil Partnership', 1), (9, 'Friends', 0), (10, 'Sexual Friendship', 1), (11, 'Godparent/Godchild', 0), (12, 'Witness at marriage', 0), (13, 'Other', 1), (14, '(Dummy)', 0);";
 char newdb_sql_insert_relendtype[] = "INSERT INTO RelEndType (RelEndTypeID, RelEndTypeTxt) VALUES (1, 'Split'), (2, 'Death'), (3, 'Converted'), (4, 'Unknown');";
-char newdb_sql_insert_contacttype[] = "INSERT INTO ContactType (ContactTypeID, ContactTypeTxt), VALUES (1, 'Fixed Telephone Number'), (2, 'Mobile Telephone Number'), (3, 'Facsimile Number'), (4, 'Telex/Teleprinter Number'), (5, 'E-Mail Address'), (6, 'Web Address'), (7, 'Instant Messaging Address'), (8, 'VOIP Number/Address'), (9, 'Social Media Account'), (10, 'Other');";
+char newdb_sql_insert_contacttype[] = "INSERT INTO ContactType (ContactTypeID, ContactTypeTxt) VALUES (1, 'Fixed Telephone Number'), (2, 'Mobile Telephone Number'), (3, 'Facsimile Number'), (4, 'Telex/Teleprinter Number'), (5, 'E-Mail Address'), (6, 'Web Address'), (7, 'Instant Messaging Address'), (8, 'VOIP Number/Address'), (9, 'Social Media Account'), (10, 'Other');";
 char newdb_sql_insert_sourcetype[] = "INSERT INTO SourceType (SourceTypeID, SourceTypeTxt) VALUES (1, 'Memory'), (2, 'Record'), (3, 'Image'), (4, 'Audio'), (5, 'Video'), (6, 'Other');";
 char newdb_sql_insert_metainfo[] = "INSERT INTO MetaInfo (Element, Value) VALUES ('Version', ''), ('Last_Edit', strftime('%Y-%m-%dT%H:%M:%S.%f'));"; /* Somehow insert PROGVER into here! */
 char newdb_sql_insert_iso6393[] = "INSERT INTO ISO6393"
@@ -8162,3 +8164,7 @@ char newdb_sql_insert_iso6393[] = "INSERT INTO ISO6393"
 /* Update Data */
 char newdb_sql_update_metainfo_version[] = "UPDATE MetaInfo SET Value = ? WHERE Element = 'Version';";
 char newdb_sql_update_metainfo_last_edit[] = "UPDATE MetaInfo SET Value = strftime('%Y-%m-%dT%H:%M:%S.%f') WHERE ELEMENT = 'Last_Edit';";
+
+/* --------------------------- Existing DB ------------------------ */
+/* Select Data */
+char sql_select_mainpersonlist[] = "SELECT PersonName.FamilyName, PersonName.GivenName, PersonName.Patronymic, PersonName.OtherNames, PersonName.TitlePrefix, PersonName.TitleSuffix, PersonName.TitleInterPart, PersonName.NameFormat, Person.PersonID, Date.DateTypeID, Date.Year1, Date.Year2 FROM Person LEFT JOIN PersonName ON PersonName.PersonID = Person.PersonID INNER JOIN Date ON Person.BirthDate = Date.DateID;";

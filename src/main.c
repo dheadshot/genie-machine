@@ -6,13 +6,145 @@
 #include <iup/iup.h>
 #include <iup/iup_config.h>
 #include <errno.h>
+#include <sqlite3.h>
 #include "safeiupconf.h"
 #include "utf8.h"
 #include "proginfo.h"
 #include "dbaccess.h"
+#include "types.h"
 
 #include "main.h"
 
+
+/*----------------- Helper Functions ---------------- */
+
+int selectfile(Ihandle *parentdlg, int isopen)
+{
+  Ihandle *config = (Ihandle *) IupGetAttribute(parentdlg, "CONFIG");
+  const char *dir = IupConfigGetVariableStr(config, "MainWindow", "LastDirectory");
+  int ans = 1;
+  
+  Ihandle *filedlg = IupFileDlg();
+  
+  if (isopen) IupSetAttribute(filedlg, "DIALOGTYPE", "OPEN");
+  else
+  {
+    IupSetAttribute(filedlg, "DIALOGTYPE", "SAVE");
+    IupSetStrAttribute(filedlg, "FILE", NULL);//IupGetAttribute(parentdlg, "FILENAME"));
+  }
+  IupSetAttribute(filedlg, "EXTFILTER", "Genie-Machine Databases|*.gendb|Databases|*.db|All Files|*.*|");
+  IupSetStrAttribute(filedlg, "DIRECTORY", dir);
+  IupSetAttributeHandle(filedlg, "PARENTDIALOG", parentdlg);
+  
+  IupPopup(filedlg, IUP_CENTERPARENT, IUP_CENTERPARENT);
+  if (IupGetInt(filedlg, "STATUS") != -1)
+  {
+    char *filename = IupGetAttribute(filedlg, "VALUE");
+    char *errmsg = NULL;
+    int rc;
+    /* Open/Create File */
+    if (isopen) rc = opendb(filename, 0); else rc = opendb(filename, 1);
+    	fprintf(stderr,"--Opened file--\n");
+    if (rc != 1)
+    {
+    	fprintf(stderr,"--Error: %lu with file %s--\n",getlastdberr(),filename);
+      errmsg = (char *) malloc(sizeof(char)*(101+strlen(filename)));
+      if (errmsg)
+      {
+        sprintf(errmsg,"There was an Error %lu opening the database \"%s\"!",getlastdberr(), filename);
+        IupMessageError(parentdlg,errmsg);
+        free(errmsg);
+      }
+      else
+      {
+        IupMessageError(parentdlg,"There was an error opening the database.  Additionally, there was an error responding to this error!");
+      }
+      ans = 0;
+    }
+    else
+    {
+      dir = IupGetAttribute(filedlg, "DIRECTORY");
+      IupConfigSetVariableStr(config, "MainWindow", "LastDirectory", dir);
+      IupSetStrAttribute(parentdlg, "FILENAME", filename);
+      IupConfigRecentUpdate(config, filename);
+      ans = 2;
+    }
+  }
+  
+  IupDestroy(filedlg);
+  	fprintf(stderr, "--Finished with Select File--\n");
+  return ans;/*IUP_DEFAULT;*/
+}
+
+int populatemainlists(Ihandle *ih)
+{
+  Ihandle *sourcelist, *relationshiplist, *personlist;
+  ntsa plist;
+  char *errmsg;
+  personlist = IupGetDialogChild(ih, "PERSONLIST");
+  
+  IupSetAttribute(personlist, "1", NULL);
+  plist = getdb_mainpersonlist();
+  if (plist == NULL)
+  {
+    errmsg = (char *) malloc(sizeof(char) + (101+sstrlen(lastdberrtext)));
+    if (errmsg == NULL)
+    {
+      /* Show a default error message */
+      IupMessageError(IupGetDialog(ih), "There was an error accessing the database and an additional error generating the error message!");
+    }
+    else
+    {
+      if (lastdberrtext)
+        sprintf(errmsg, "There was an error accessing the database:\n %lu:%lu %s", getlastdberr(), lastdberl, lastdberrtext);
+      else
+        sprintf(errmsg, "There was an error '%lu:%lu' accessing the database!", getlastdberr(), lastdberl);
+      /* Show the error message */
+      IupMessageError(IupGetDialog(ih), errmsg);
+      free(errmsg);
+    }
+    return 0;
+  }
+  
+  sqlite3_int64 i;
+  
+  for (i=0; plist[i] != NULL; i++)
+  {
+    IupSetStrAttribute(personlist, "APPENDITEM", plist[i]);
+    free(plist[i]);
+  }
+  
+  free(plist);
+  plist = NULL;
+}
+
+void donewfile(Ihandle *ih)
+{
+  if (selectfile(IupGetDialog(ih), 0) == 2)
+  {
+  	fprintf(stderr, "--Initialising File--\n");
+    if (initnewdb() != 1)
+    {
+      /* Compile and show Error Message */
+  	fprintf(stderr, "--Error Initialising DB!--\n");
+  	fprintf(stderr, "--Error '%lu:%lu': %s--\n",getlastdberr(),lastdberl,lastdberrtext);
+      char *errmsg = (char *) malloc(sizeof(char)*(101+sstrlen(lastdberrtext)));
+      if (errmsg)
+      {
+        sprintf(errmsg, "Error '%lu:%lu' Initialising Database:\n%s", getlastdberr(), lastdberl, lastdberrtext);
+        IupMessageError(IupGetDialog(ih), errmsg);
+        free(errmsg);
+        
+      }
+      else
+      {
+        IupMessageError(IupGetDialog(ih), "Error Initialising Database!  Additionally, error processing this error!");
+      }
+    }
+  	fprintf(stderr, "--Finished Initialising File--\n");
+    
+  }
+}
 
 /* ---------------- Callback Functions ---------------- */
 
@@ -34,6 +166,12 @@ int item_exit_action_cb(Ihandle *item_exit)
   IupConfigSave(config);
   IupDestroy(config);
   return IUP_CLOSE;
+}
+
+int item_new_action_cb(Ihandle *item_new)
+{
+  donewfile(item_new);
+  return IUP_DEFAULT;
 }
 
 int config_recent_cb(Ihandle *ih)
@@ -87,6 +225,7 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
   
   item_new = IupItem("&New...\tCtrl+N", NULL); /* Dunno if it's a good idea to have a shortcut for New */
   IupSetAttribute(item_new, "IMAGE", "IUP_FileNew");
+  IupSetCallback(item_new, "ACTION", (Icallback) item_new_action_cb);
   
   item_open = IupItem("&Open...\tCtrl+O", NULL);
   IupSetAttribute(item_open, "IMAGE", "IUP_FileOpen");
@@ -105,10 +244,10 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
   item_export_gedcom551 = IupItem("Export GEDCOM 5.5.&1 File...", NULL);
   
   item_exit = IupItem("E&xit", NULL);
-  
-  item_help = IupItem("Help...\tF1", NULL);
   IupSetAttribute(item_exit, "NAME", "ITEM_EXIT");
   IupSetCallback(item_exit, "ACTION", (Icallback) item_exit_action_cb);
+  
+  item_help = IupItem("Help...\tF1", NULL);
   
   item_showtoolbar = IupItem("Show &Toolbar", NULL);
   IupSetAttribute(item_showtoolbar, "NAME", "ITEM_SHOWTOOLBAR");
