@@ -63,7 +63,7 @@ CREATE TABLE Age (
   NumDays1 INTEGER DEFAULT NULL CHECK (NumDays1 >= 0 or NumDays1 ISNULL), -- Number of Days (or NULL if unknown)
   Comment1 TEXT DEFAULT NULL,              -- Comment on the Age
   Source1ID INTEGER DEFAULT NULL REFERENCES Source (SourceID), -- Source for Age 1 (or NULL if none)
-  InclusiveAge2 TEXT DEFAULT NULL CHECK ((InclusiveAge2 ISNULL and AgeType IS NOT 'BET') or (AgeType IS 'BET' and (InclusiveAge2 = 'Y' or InclusiveAge2 = 'N'))), -- Only used if AgeTypeID is 'BET', otherwise NULL, Does the age range include the age specified, Yes or No?  (NULL default for most AgeTypeIDs, otherwise default Yes)
+  InclusiveAge2 TEXT DEFAULT NULL CHECK ((InclusiveAge2 ISNULL and AgeTypeID IS NOT 'BET') or (AgeTypeID IS 'BET' and (InclusiveAge2 = 'Y' or InclusiveAge2 = 'N'))), -- Only used if AgeTypeID is 'BET', otherwise NULL, Does the age range include the age specified, Yes or No?  (NULL default for most AgeTypeIDs, otherwise default Yes)
   UseMonths2 INTEGER DEFAULT NULL CHECK ((AgeTypeID IS NOT 'BET' and UseMonths2 IS NULL) or UseMonths2 IN (0, 1)), -- Only used if AgeTypeID is 'BET', otherwise NULL, Are we using the Months field?  Specifically, the age could only be known in the days:years form.
   NumYears2 INTEGER DEFAULT NULL CHECK ((AgeTypeID IS NOT 'BET' and NumYears2 IS NULL) or NumYears2 ISNULL or NumYears2 >= 0), -- Only used if AgeTypeID is 'BET', otherwise NULL, Number of Years (or NULL also if unknown)
   NumMonths2 INTEGER DEFAULT NULL CHECK ((AgeTypeID IS NOT 'BET' and NumMonths2 ISNULL) or (UseMonths2 = 0 and NumMonths2 ISNULL) or NumMonths2 ISNULL or NumMonths2 >= 0), -- Only used if AgeTypeID is 'BET', otherwise NULL, Number of Months (or NULL also if unknown or not applicable (see UseMonths2 field))
@@ -273,7 +273,7 @@ CREATE TABLE Event (
   EventID INTEGER PRIMARY KEY NOT NULL,    -- (RowID) Event ID
   PersonID INTEGER NOT NULL REFERENCES Person (PersonID), -- Person to whom the event occurred
   EventDate INTEGER NOT NULL REFERENCES Date (DateID), -- Date of the Event
-  EventDate INTEGER DEFAULT NULL REFERENCES Age (AgeID), -- Person's age at event
+  AgeAtEvent INTEGER DEFAULT NULL REFERENCES Age (AgeID), -- Person's age at event
   Description TEXT NOT NULL DEFAULT '',    -- Short description of event
   Details TEXT DEFAULT NULL,               -- Event Details (or NULL if not applicable)
   PlaceName TEXT DEFAULT NULL,             -- Place the where the event occurred (or NULL if not applicable)
@@ -304,7 +304,7 @@ CREATE TABLE Source (
 
 CREATE TABLE SourceType (
   SourceTypeID INTEGER PRIMARY KEY NOT NULL, -- (RowID) Source Type ID
-  SourceTypeTxt TEXT NOT NULL DEFAULT '' UNIQUE, -- The full Source Type
+  SourceTypeTxt TEXT NOT NULL DEFAULT '' UNIQUE -- The full Source Type
 );
 
 CREATE TABLE Multimedia (
@@ -361,7 +361,7 @@ INSERT INTO RelType (RelTypeID, RelTypeTxt, CanHaveChild) VALUES (1, 'Sperm/Egg 
 
 INSERT INTO RelEndType (RelEndTypeID, RelEndTypeTxt) VALUES (1, 'Split'), (2, 'Death'), (3, 'Converted'), (4, 'Unknown');
 
-INSERT INTO ContactType (ContactTypeID, ContactTypeTxt), VALUES (1, 'Fixed Telephone Number'), (2, 'Mobile Telephone Number'), (3, 'Facsimile Number'), (4, 'Telex/Teleprinter Number'), (5, 'E-Mail Address'), (6, 'Web Address'), (7, 'Instant Messaging Address'), (8, 'VOIP Number/Address'), (9, 'Social Media Account'), (10, 'Other');
+INSERT INTO ContactType (ContactTypeID, ContactTypeTxt) VALUES (1, 'Fixed Telephone Number'), (2, 'Mobile Telephone Number'), (3, 'Facsimile Number'), (4, 'Telex/Teleprinter Number'), (5, 'E-Mail Address'), (6, 'Web Address'), (7, 'Instant Messaging Address'), (8, 'VOIP Number/Address'), (9, 'Social Media Account'), (10, 'Other');
 
 INSERT INTO SourceType (SourceTypeID, SourceTypeTxt) VALUES (1, 'Memory'), (2, 'Record'), (3, 'Image'), (4, 'Audio'), (5, 'Video'), (6, 'Other');
 
