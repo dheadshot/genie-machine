@@ -259,6 +259,7 @@ int item_exit_action_cb(Ihandle *item_exit)
 
 int item_new_action_cb(Ihandle *item_new)
 {
+//  if (IupGetAttribute(IupGetDialog(item_new),"FILENAME")) /* Close file */
   donewfile(item_new);
   if (IupGetAttribute(IupGetDialog(item_new),"FILENAME"))
   {
@@ -271,6 +272,7 @@ int item_new_action_cb(Ihandle *item_new)
 int config_recent_cb(Ihandle *ih)
 {
   Ihandle *dlg = IupGetDialog(ih);
+  Ihandle *config = (Ihandle *) IupGetAttribute(dlg, "CONFIG");
   
   char *filename = IupGetAttribute(dlg, "FILENAME");
   if (filename && filename[0] && IupAlarm("Warning", 
@@ -281,6 +283,56 @@ int config_recent_cb(Ihandle *ih)
   
   filename = IupGetAttribute(ih, "TITLE");
   /* TODO: Write routine to open the file in filename! */
+  int fileexists = afnexists(filename);
+  char *errmsg;
+  
+  if (!fileexists)
+  {
+    	fprintf(stderr, "--Error: file '%s' doesn't exist!--\n");
+    errmsg = (char *) malloc(sizeof(char)*(101+strlen(filename)));
+    if (errmsg)
+    {
+      sprintf(errmsg, "Error opening file: the file \"%s\" does not exist!", filename);
+      IupMessageError(dlg,errmsg);
+      free(errmsg);
+    }
+    else
+    {
+      IupMessageError(dlg,"Error opening file: the file does not exist!\nAdditionally, an \"Out of Memory\" error was encountered processing the above error!");
+    }
+  }
+  else
+  {
+    int rc = opendb(filename, 0);
+        	fprintf(stderr,"--Opened file--\n");
+    if (rc != 1)
+    {
+      	fprintf(stderr,"--Error: %lu with file %s--\n",getlastdberr(),filename);
+      errmsg = (char *) malloc(sizeof(char)*(101+strlen(filename)));
+      if (errmsg)
+      {
+        sprintf(errmsg,"There was an Error %lu opening the database \"%s\"!",getlastdberr(), filename);
+        IupMessageError(dlg,errmsg);
+        free(errmsg);
+      }
+      else
+      {
+        IupMessageError(dlg,"There was an error opening the database.  Additionally, there was an error responding to this error!");
+      }
+//      ans = 0;
+    }
+    else
+    {
+//      char *dir = IupGetAttribute(filedlg, "DIRECTORY");
+//      IupConfigSetVariableStr(config, "MainWindow", "LastDirectory", dir);
+      IupSetStrAttribute(dlg, "FILENAME", filename);
+      IupConfigRecentUpdate(config, filename);
+//      ans = 2;
+      Ihandle *close_btn = IupGetDialogChild(ih, "CLOSE_BTN");
+      IupSetAttribute(close_btn,"ACTIVE", "YES");
+      populatemainlists(ih);
+    }
+  }
   
   return IUP_DEFAULT;
 }
