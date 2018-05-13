@@ -18,6 +18,30 @@
 
 /*----------------- Helper Functions ---------------- */
 
+const char *str_fileext(const char *filename)
+{
+  /* Start at last char and work backwards */
+      	fprintf(stderr, "--FN = %s--\n", filename);
+  long len = (long) strlen(filename);
+      	fprintf(stderr, "--LEN(FN) = %ld--\n", len);
+  long offset = len - 1;
+      	fprintf(stderr, "--OFFSET = %ld--\n", offset);
+  while (offset > 0)
+  {
+    if (filename[offset] == '\\' || filename[offset] == '/') break;
+    
+    if (filename[offset] == '.')
+    {
+      offset++;
+      	fprintf(stderr, "--EXT = '%s'--\n",filename + (sizeof(char)*offset));
+      return filename + (sizeof(char)*offset);
+    }
+    offset--;
+  }
+      	fprintf(stderr, "--EXT = NULL--\n");
+  return NULL;
+}
+
 int selectfile(Ihandle *parentdlg, int isopen)
 {
   Ihandle *config = (Ihandle *) IupGetAttribute(parentdlg, "CONFIG");
@@ -40,38 +64,103 @@ int selectfile(Ihandle *parentdlg, int isopen)
   if (IupGetInt(filedlg, "STATUS") != -1)
   {
     char *filename = IupGetAttribute(filedlg, "VALUE");
+      	fprintf(stderr, "--FN = %s--\n",filename);
     char *errmsg = NULL;
-    int rc;
-    /* Open/Create File */
-    if (isopen) rc = opendb(filename, 0); else rc = opendb(filename, 1);
-    	fprintf(stderr,"--Opened file--\n");
-    if (rc != 1)
+    int extnum = IupGetInt(filedlg, "FILTERUSED");
+      	fprintf(stderr, "--EXTNUM = %d--\n",extnum);
+    int rc = 0;
+    int fileexists = 0;
+    
+    if (!isopen && !str_fileext(filename) && extnum < 3)
     {
-    	fprintf(stderr,"--Error: %lu with file %s--\n",getlastdberr(),filename);
-      errmsg = (char *) malloc(sizeof(char)*(101+strlen(filename)));
-      if (errmsg)
+      char *tmpfn = (char *) malloc(sizeof(char)*(10+strlen(filename)));
+      if (!tmpfn)
       {
-        sprintf(errmsg,"There was an Error %lu opening the database \"%s\"!",getlastdberr(), filename);
-        IupMessageError(parentdlg,errmsg);
-        free(errmsg);
+        IupMessageError(parentdlg,"Error opening file: Out of Memory!");
+        rc = 1;
+      }
+      else if (extnum == 1)
+      {
+        /* .gendb */
+        strcpy(tmpfn,filename);
+        strcat(tmpfn,".gendb");
       }
       else
       {
-        IupMessageError(parentdlg,"There was an error opening the database.  Additionally, there was an error responding to this error!");
+        /* .db */
+        strcpy(tmpfn,filename);
+        strcat(tmpfn,".db");
       }
-      ans = 0;
+      if (!rc)
+      {
+        IupSetStrAttribute(parentdlg, "AMENDED_FILEDLG_VALUE", tmpfn);
+        filename = IupGetAttribute(parentdlg, "AMENDED_FILEDLG_VALUE");
+        free(tmpfn);
+      }
+    }
+    
+    if (!rc) fileexists = afnexists(filename);
+    
+    if (rc || (isopen && !fileexists))
+    {
+      if (!rc)
+      {
+        	fprintf(stderr, "--Error: file '%s' doesn't exist!--\n");
+        errmsg = (char *) malloc(sizeof(char)*(101+strlen(filename)));
+        if (errmsg)
+        {
+          sprintf(errmsg, "Error opening file: the file \"%s\" does not exist!", filename);
+          IupMessageError(parentdlg,errmsg);
+          free(errmsg);
+        }
+        else
+        {
+          IupMessageError(parentdlg,"Error opening file: the file does not exist!\nAdditionally, an \"Out of Memory\" error was encountered processing the above error!");
+        }
+      }
     }
     else
     {
-      dir = IupGetAttribute(filedlg, "DIRECTORY");
-      IupConfigSetVariableStr(config, "MainWindow", "LastDirectory", dir);
-      IupSetStrAttribute(parentdlg, "FILENAME", filename);
-      IupConfigRecentUpdate(config, filename);
-      ans = 2;
+      if (!isopen && fileexists)
+      {
+        /* Wipe File */
+        FILE *af;
+        af = fopen(filename, "w");
+        if (af) fclose(af);
+        	fprintf(stderr, "--Wiped FN = %s--\n",filename);
+      }
+      /* Open/Create File */
+      if (isopen) rc = opendb(filename, 0); else rc = opendb(filename, 1);
+        	fprintf(stderr,"--Opened file--\n");
+      if (rc != 1)
+      {
+        	fprintf(stderr,"--Error: %lu with file %s--\n",getlastdberr(),filename);
+        errmsg = (char *) malloc(sizeof(char)*(101+strlen(filename)));
+        if (errmsg)
+        {
+          sprintf(errmsg,"There was an Error %lu opening the database \"%s\"!",getlastdberr(), filename);
+          IupMessageError(parentdlg,errmsg);
+          free(errmsg);
+        }
+        else
+        {
+          IupMessageError(parentdlg,"There was an error opening the database.  Additionally, there was an error responding to this error!");
+        }
+        ans = 0;
+      }
+      else
+      {
+        dir = IupGetAttribute(filedlg, "DIRECTORY");
+        IupConfigSetVariableStr(config, "MainWindow", "LastDirectory", dir);
+        IupSetStrAttribute(parentdlg, "FILENAME", filename);
+        IupConfigRecentUpdate(config, filename);
+        ans = 2;
+      }
     }
   }
   
   IupDestroy(filedlg);
+  IupSetAttribute(parentdlg, "AMENDED_FILEDLG_VALUE", NULL);
   	fprintf(stderr, "--Finished with Select File--\n");
   return ans;/*IUP_DEFAULT;*/
 }
@@ -171,6 +260,11 @@ int item_exit_action_cb(Ihandle *item_exit)
 int item_new_action_cb(Ihandle *item_new)
 {
   donewfile(item_new);
+  if (IupGetAttribute(IupGetDialog(item_new),"FILENAME"))
+  {
+    Ihandle *close_btn = IupGetDialogChild(item_new,"CLOSE_BTN");
+    IupSetAttribute(close_btn, "ACTIVE", "YES");
+  }
   return IUP_DEFAULT;
 }
 
@@ -195,17 +289,23 @@ int file_menu_open_cb(Ihandle *ih)
 {
   Ihandle *item_close = IupGetDialogChild(ih, "ITEM_CLOSE");
   Ihandle *item_merge = IupGetDialogChild(ih, "ITEM_MERGE");
+  Ihandle *item_export_gedcom55 = IupGetDialogChild(ih, "ITEM_EXPORT_GEDCOM55");
+  Ihandle *item_export_gedcom551 = IupGetDialogChild(ih, "ITEM_EXPORT_GEDCOM551");
   char *filename = IupGetAttribute(IupGetDialog(ih), "FILENAME");
   
   if (filename && filename[0])
   {
     IupSetAttribute(item_close, "ACTIVE", "YES");
     IupSetAttribute(item_merge, "ACTIVE", "YES");
+    IupSetAttribute(item_export_gedcom55, "ACTIVE", "YES");
+    IupSetAttribute(item_export_gedcom551, "ACTIVE", "YES");
   }
   else
   {
     IupSetAttribute(item_close, "ACTIVE", "NO");
     IupSetAttribute(item_merge, "ACTIVE", "NO");
+    IupSetAttribute(item_export_gedcom55, "ACTIVE", "NO");
+    IupSetAttribute(item_export_gedcom551, "ACTIVE", "NO");
   }
   
   return IUP_DEFAULT;
@@ -220,6 +320,14 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
           *item_merge, *import_menu, *import_submenu, *item_import_gedcom, 
           *export_menu, *export_submenu, *item_export_gedcom55, 
           *item_export_gedcom551, *item_exit;
+  Ihandle *person_menu, *person_submenu, *item_newperson, *item_editperson, 
+          *item_viewperson, *item_deleteperson, *item_ancestraltree, 
+          *item_descendenttreefromperson;
+  Ihandle *relationship_menu, *relationship_submenu, *item_newrelationship, 
+          *item_editrelationship, *item_viewrelationship, 
+          *item_deleterelationship, *item_descendenttreefromrelationship;
+  Ihandle *source_menu, *source_submenu, *item_newsource, *item_editsource, 
+          *item_viewsource, *item_deletesource;
   Ihandle *view_menu, *view_submenu, *item_showtoolbar, *item_showstatusbar;
   Ihandle *help_menu, *help_submenu, *item_help, *item_setbrowser, *item_about;
   
@@ -233,21 +341,25 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
   item_close = IupItem("&Close", NULL);
   IupSetAttribute(item_close, "NAME", "ITEM_CLOSE");
   IupSetAttribute(item_close, "IMAGE", "IUP_FileClose");
+  IupSetAttribute(item_close, "ACTIVE", "NO");
   
   item_merge = IupItem("&Merge...", NULL);
   IupSetAttribute(item_merge, "NAME", "ITEM_MERGE");
+  IupSetAttribute(item_merge, "ACTIVE", "NO");
   
   item_import_gedcom = IupItem("Import &GEDCOM File...", NULL);
   
   item_export_gedcom55 = IupItem("Export GEDCOM &5.5 File...", NULL);
+  IupSetAttribute(item_export_gedcom55, "NAME", "ITEM_EXPORT_GEDCOM55");
+  IupSetAttribute(item_export_gedcom55, "ACTIVE", "NO");
   
   item_export_gedcom551 = IupItem("Export GEDCOM 5.5.&1 File...", NULL);
+  IupSetAttribute(item_export_gedcom551, "NAME", "ITEM_EXPORT_GEDCOM551");
+  IupSetAttribute(item_export_gedcom55, "ACTIVE", "NO");
   
   item_exit = IupItem("E&xit", NULL);
   IupSetAttribute(item_exit, "NAME", "ITEM_EXIT");
   IupSetCallback(item_exit, "ACTION", (Icallback) item_exit_action_cb);
-  
-  item_help = IupItem("Help...\tF1", NULL);
   
   item_showtoolbar = IupItem("Show &Toolbar", NULL);
   IupSetAttribute(item_showtoolbar, "NAME", "ITEM_SHOWTOOLBAR");
@@ -256,6 +368,8 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
   item_showstatusbar = IupItem("Show &Statusbar", NULL);
   IupSetAttribute(item_showstatusbar, "NAME", "ITEM_SHOWSTATUSBAR");
   IupSetAttribute(item_showstatusbar, "VALUE", "ON");
+  
+  item_help = IupItem("Help...\tF1", NULL);
   
   item_setbrowser = IupItem("Set &Web-Browser...", NULL);
   
@@ -337,20 +451,23 @@ Ihandle *create_toolbar(Ihandle *config)
   new_btn = IupButton(NULL, NULL);
   IupSetAttribute(new_btn, "IMAGE", "IUP_FileNew");
   IupSetAttribute(new_btn, "FLAT", "YES");
-  IupSetAttribute(new_btn, "TIP", "New... (Ctrl+N)");
+  IupSetAttribute(new_btn, "TIP", "Create a New File... (Ctrl+N)");
   IupSetAttribute(new_btn, "CANFOCUS", "NO");
+  IupSetCallback(new_btn, "ACTION", (Icallback) item_new_action_cb);
   
   open_btn = IupButton(NULL, NULL);
   IupSetAttribute(open_btn, "IMAGE", "IUP_FileOpen");
   IupSetAttribute(open_btn, "FLAT", "YES");
-  IupSetAttribute(open_btn, "TIP", "Open... (Ctrl+O)");
+  IupSetAttribute(open_btn, "TIP", "Open Existing File... (Ctrl+O)");
   IupSetAttribute(open_btn, "CANFOCUS", "NO");
   
   close_btn = IupButton(NULL, NULL);
   IupSetAttribute(close_btn, "IMAGE", "IUP_FileClose");
   IupSetAttribute(close_btn, "FLAT", "YES");
-  IupSetAttribute(close_btn, "TIP", "Close");
+  IupSetAttribute(close_btn, "TIP", "Close Current File");
   IupSetAttribute(close_btn, "CANFOCUS", "NO");
+  IupSetAttribute(close_btn, "NAME", "CLOSE_BTN");
+  IupSetAttribute(close_btn, "ACTIVE", "NO");
   
   toolbar = IupHbox(
                     new_btn,
