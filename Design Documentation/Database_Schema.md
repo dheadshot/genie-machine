@@ -1,6 +1,6 @@
 # Schema of Database
 
-This is the SQLite schema of the database and is based on the Database Design (see Database_Design.md).  This is currently a **Work In Progress**!
+This is the SQLite schema of the database and is based on the Database Design (see Database_Design.md).
 
 ## Table Definitions
 
