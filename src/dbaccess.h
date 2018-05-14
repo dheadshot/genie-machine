@@ -17,6 +17,7 @@ int opendb(char *dbfilename, int newfile);
 int closedb();
 int initnewdb();
 ntsa getdb_mainpersonlist();
+ntsa getdb_mainrelationshiplist();
 
 #ifndef __DBACCESS_DECLARE__
 extern char *lastdberrtext;

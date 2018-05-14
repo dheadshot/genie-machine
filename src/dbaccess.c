@@ -529,7 +529,7 @@ ntsa getdb_mainpersonlist()
     goto ErrGetDB_MainPersonList;
   }
   
-  if (tblcount) return thelist;
+  if (tblcount == 0) return thelist;
   
   rl++;
   rc = sqlite3_prepare_v2(db, sql_select_mainpersonlist, -1, &tblstmt, NULL);
@@ -565,9 +565,17 @@ ntsa getdb_mainpersonlist()
       year1 = sqlite3_column_text(tblstmt, 10);
       year2 = sqlite3_column_text(tblstmt, 11);
       
-      fullname = formatname(familyname, givenname, patronymic, othernames, 
-                            titleprefix, titlesuffix, titleinterpart, 
-                            nameformat);
+      if (nameformat)
+      {
+        fullname = formatname(familyname, givenname, patronymic, othernames, 
+                              titleprefix, titlesuffix, titleinterpart, 
+                              nameformat);
+      }
+      else
+      {
+        fullname = (char *) malloc(sizeof(char));
+        if (fullname) fullname[0] = 0;
+      }
       if (fullname == NULL)
       {
         goto ErrGetDB_MainPersonList_Freethelist;
@@ -640,6 +648,342 @@ ErrGetDB_MainPersonList_Freethelist:
   free(thelist);
   
 ErrGetDB_MainPersonList:
+  if (errmsg)
+  {
+    setdberrtext(errmsg);
+    sqlite3_free(errmsg);
+  }
+  lastdberr = rc;
+  lastdberl = rl;
+  return NULL;
+}
+
+ntsa getdb_mainrelationshiplist()
+{
+  lastdberr = 0;
+  lastdberl = 0;
+  unsetdberrtext();
+  if (!dbisopen) return NULL;
+  
+  char *errmsg = NULL;
+  ntsa thelist;
+  int rc, rl = 0;
+  sqlite3_stmt *countstmt, *tblstmt;
+  sqlite3_int64 tblcount;
+  
+  rl++;
+  rc = sqlite3_prepare_v2(db, "SELECT Count(RelID) FROM Relationship;", 39, &countstmt, NULL);
+  if (rc != SQLITE_OK) goto ErrGetDB_MainRelationshipList;
+  
+  rl++;
+  rc = sqlite3_step(countstmt);
+  if (rc != SQLITE_ROW && rc != SQLITE_DONE && rc != SQLITE_OK) goto ErrGetDB_MainRelationshipList;
+  
+  rl++;
+  tblcount = sqlite3_column_int64(countstmt,0);
+  
+  thelist = (ntsa) malloc(sizeof(char *) * (tblcount + 1));
+  if (thelist == NULL)
+  {
+    setdberrtext("Out of Memory loading data from Database!");
+    rc = 0;
+    goto ErrGetDB_MainRelationshipList;
+  }
+  thelist[tblcount] = NULL;
+  
+  rl++;
+  rc = sqlite3_finalize(countstmt);
+  if (rc != SQLITE_OK)
+  {
+    goto ErrGetDB_MainRelationshipList;
+  }
+  
+  if (tblcount == 0) return thelist;
+  
+  rl++;
+  rc = sqlite3_prepare_v2(db, sql_select_mainrelationshiplist, -1, &tblstmt, NULL);
+  if (rc != SQLITE_OK)
+  {
+    free(thelist);
+    goto ErrGetDB_MainRelationshipList;
+  }
+  
+  rl++;
+  rc = SQLITE_ROW;
+  sqlite3_int64 j=0, p1personid, p2personid, relid;
+  char *p1familyname, *p1givenname, *p1patronymic, *p1othernames, 
+       *p1titleprefix, *p1titlesuffix, *p1titleinterpart, *p1nameformat, 
+       *p2familyname, *p2givenname, *p2patronymic, *p2othernames, 
+       *p2titleprefix, *p2titlesuffix, *p2titleinterpart, *p2nameformat, 
+       *reltype, *d1datetype, *d1year1, *d1year2, *d2datetype, *d2year1, 
+       *d2year2, *p1fullname, *p2fullname, *p1extname, *p2extname, *sdate, 
+       *edate, *daterange, *relidtxt;
+  
+  while (rc == SQLITE_ROW)
+  {
+    rc = sqlite3_step(tblstmt);
+    if (rc != SQLITE_ROW && rc != SQLITE_DONE && rc != SQLITE_OK) goto ErrGetDB_MainRelationshipList_Freethelist;
+    
+    if (rc == SQLITE_ROW && j < tblcount)
+    {
+      p1familyname = sqlite3_column_text(tblstmt, 0);
+      p1givenname = sqlite3_column_text(tblstmt, 1);
+      p1patronymic = sqlite3_column_text(tblstmt, 2);
+      p1othernames = sqlite3_column_text(tblstmt, 3);
+      p1titleprefix = sqlite3_column_text(tblstmt, 4);
+      p1titlesuffix = sqlite3_column_text(tblstmt, 5);
+      p1titleinterpart = sqlite3_column_text(tblstmt, 6);
+      p1nameformat = sqlite3_column_text(tblstmt, 7);
+      p1personid = sqlite3_column_int64(tblstmt, 8);
+      p2familyname = sqlite3_column_text(tblstmt, 9);
+      p2givenname = sqlite3_column_text(tblstmt, 10);
+      p2patronymic = sqlite3_column_text(tblstmt, 11);
+      p2othernames = sqlite3_column_text(tblstmt, 12);
+      p2titleprefix = sqlite3_column_text(tblstmt, 13);
+      p2titlesuffix = sqlite3_column_text(tblstmt, 14);
+      p2titleinterpart = sqlite3_column_text(tblstmt, 15);
+      p2nameformat = sqlite3_column_text(tblstmt, 16);
+      p2personid = sqlite3_column_int64(tblstmt, 17);
+      reltype = sqlite3_column_text(tblstmt, 18);
+      d1datetype = sqlite3_column_text(tblstmt, 19);
+      d1year1 = sqlite3_column_text(tblstmt, 20);
+      d1year2 = sqlite3_column_text(tblstmt, 21);
+      d2datetype = sqlite3_column_text(tblstmt, 22);
+      d2year1 = sqlite3_column_text(tblstmt, 23);
+      d2year2 = sqlite3_column_text(tblstmt, 24);
+      relid = sqlite3_column_int64(tblstmt, 25);
+      
+      if (p1nameformat)
+      {
+        p1fullname = formatname(p1familyname, p1givenname, p1patronymic, 
+                                p1othernames, p1titleprefix, p1titlesuffix, 
+                                p1titleinterpart, p1nameformat);
+      }
+      else
+      {
+          p1fullname = (char *) malloc(sizeof(char));
+          if (p1fullname) p1fullname[0] = 0;
+      }
+      if (p1fullname == NULL)
+      {
+        goto ErrGetDB_MainRelationshipList_Freethelist;
+      }
+      if (p2nameformat || p2personid)
+      {
+        if (p2nameformat)
+        {
+          p2fullname = formatname(p2familyname, p2givenname, p2patronymic, 
+                                  p2othernames, p2titleprefix, p2titlesuffix, 
+                                  p2titleinterpart, p2nameformat);
+        }
+        else
+        {
+          p2fullname = (char *) malloc(sizeof(char));
+          if (p2fullname) p2fullname[0] = 0;
+          else setdberrtext("Out of Memory!");
+        }
+        if (p2fullname == NULL)
+        {
+          free(p1fullname);
+          goto ErrGetDB_MainRelationshipList_Freethelist;
+        }
+      }
+      else
+      {
+        p2fullname = (char *) malloc(sizeof(char)*2);
+        if (p2fullname == NULL)
+        {
+          free(p1fullname);
+          setdberrtext("Out of Memory!");
+          goto ErrGetDB_MainRelationshipList_Freethelist;
+        }
+        strcpy(p2fullname,"?");
+      }
+      
+      /* p1extname = (char *) malloc(sizeof(char)*(51+strlen(p1fullname)));
+      if (!p1extname)
+      {
+        free(p1fullname);
+        free(p2fullname);
+        goto ErrGetDB_MainRelationshipList_Freethelist;
+      }
+      p2extname = (char *) malloc(sizeof(char)*(51+strlen(p2fullname)));
+      if (!p2extname)
+      {
+        free(p1extname);
+        free(p1fullname);
+        free(p2fullname);
+        goto ErrGetDB_MainRelationshipList_Freethelist;
+      }
+      */
+      p1extname = sqlite3_mprintf("%s (%lld)", p1fullname, p1personid);
+      if (!p1extname)
+      {
+        free(p1fullname);
+        free(p2fullname);
+        setdberrtext("Out of Memory!");
+        goto ErrGetDB_MainRelationshipList_Freethelist;
+      }
+      if (p2personid)
+      {
+        p2extname = sqlite3_mprintf("%s (%lld)", p2fullname, p2personid);
+      }
+      else
+      {
+        p2extname = sqlite3_mprintf("?");
+      }
+      if (!p2extname)
+      {
+        sqlite3_free(p1extname);
+        free(p1fullname);
+        free(p2fullname);
+        setdberrtext("Out of Memory!");
+        goto ErrGetDB_MainRelationshipList_Freethelist;
+      }
+      
+      free(p1fullname);
+      p1fullname = NULL;
+      free(p2fullname);
+      p2fullname = NULL;
+      
+      sdate = (char *) malloc(sizeof(char)*(sstrlen(d1year1)+sstrlen(d1year2)+11));
+      if (!sdate)
+      {
+        sqlite3_free(p1extname);
+        sqlite3_free(p2extname);
+        setdberrtext("Out of Memory!");
+        goto ErrGetDB_MainRelationshipList_Freethelist;
+      }
+      if (str_comparet_nt(d1datetype,"BET",0))
+      {
+        strcpy(sdate,"[");
+        if (d1year1) strcat(sdate, d1year1); else strcat(sdate, "????");
+        strcpy(sdate,"-");
+        if (d1year2) strcat(sdate, d1year2); else strcat(sdate, "????");
+        strcat(sdate,"]");
+      }
+      else
+      {
+        if (str_comparet_nt(d1datetype,"ABT",0)) strcat(sdate,"~");
+        else if (str_comparet_nt(d1datetype,"BEF",0)) strcat(sdate,"<");
+        else if (str_comparet_nt(d1datetype,"AFT",0)) strcat(sdate,">");
+        if (d1year1) strcat(sdate, d1year1); else strcat(sdate, "????");
+      }
+      
+      if (d2datetype)
+      {
+        edate = (char *) malloc(sizeof(char)*(sstrlen(d2year1)+sstrlen(d2year2)+11));
+        if (!edate)
+        {
+          sqlite3_free(p1extname);
+          sqlite3_free(p2extname);
+          free(sdate);
+          setdberrtext("Out of Memory!");
+          goto ErrGetDB_MainRelationshipList_Freethelist;
+        }
+        if (str_comparet_nt(d2datetype,"BET",0))
+        {
+          strcpy(edate,"[");
+          if (d2year1) strcat(edate, d2year1); else strcat(edate, "????");
+          strcpy(edate,"-");
+          if (d2year2) strcat(edate, d2year2); else strcat(edate, "????");
+          strcat(edate,"]");
+        }
+        else
+        {
+          if (str_comparet_nt(d2datetype,"ABT",0)) strcat(edate,"~");
+          else if (str_comparet_nt(d2datetype,"BEF",0)) strcat(edate,"<");
+          else if (str_comparet_nt(d2datetype,"AFT",0)) strcat(edate,">");
+          if (d2year1) strcat(edate, d2year1); else strcat(edate, "????");
+        }
+      }
+      else
+      {
+        edate = (char *) malloc(sizeof(char));
+        if (!edate)
+        {
+          sqlite3_free(p1extname);
+          sqlite3_free(p2extname);
+          free(sdate);
+          setdberrtext("Out of Memory!");
+          goto ErrGetDB_MainRelationshipList_Freethelist;
+        }
+        edate[0] = 0;
+      }
+      
+      daterange = (char *) malloc(sizeof(char)*(strlen(sdate)+strlen(edate)+5));
+      if (!daterange)
+      {
+        sqlite3_free(p1extname);
+        sqlite3_free(p2extname);
+        free(sdate);
+        free(edate);
+        setdberrtext("Out of Memory!");
+        goto ErrGetDB_MainRelationshipList_Freethelist;
+      }
+      strcpy(daterange, sdate);
+      strcat(daterange, " - ");
+      strcat(daterange, edate);
+      free(sdate);
+      sdate = NULL;
+      free(edate);
+      edate = NULL;
+      
+      relidtxt = sqlite3_mprintf(" %lld)", relid);
+      if (!relidtxt)
+      {
+        sqlite3_free(p1extname);
+        sqlite3_free(p2extname);
+        free(daterange);
+        setdberrtext("Out of Memory!");
+        goto ErrGetDB_MainRelationshipList_Freethelist;
+      }
+      
+      thelist[j] = (char *) malloc(sizeof(char)*(strlen(p1extname)+strlen(p2extname)+strlen(daterange)+strlen(relidtxt)+10));
+      if (!thelist[j])
+      {
+        sqlite3_free(p1extname);
+        sqlite3_free(p2extname);
+        sqlite3_free(relidtxt);
+        free(daterange);
+        setdberrtext("Out of Memory!");
+        goto ErrGetDB_MainRelationshipList_Freethelist;
+      }
+      strcpy(thelist[j], p1extname);
+      strcat(thelist[j], " & ");
+      strcat(thelist[j], p2extname);
+      strcat(thelist[j], " (");
+      strcat(thelist[j], daterange);
+      strcat(thelist[j], ",");
+      strcat(thelist[j], relidtxt);
+      
+      sqlite3_free(p1extname);
+      p1extname = NULL;
+      sqlite3_free(p2extname);
+      p2extname = NULL;
+      sqlite3_free(relidtxt);
+      relidtxt = NULL;
+      free(daterange);
+      daterange = NULL;
+      
+      j++;
+    }
+  }
+  
+  rl++;
+  rc = sqlite3_finalize(tblstmt);
+  if (rc != SQLITE_OK) goto ErrGetDB_MainRelationshipList_Freethelist;
+  
+  return thelist;
+  
+  
+ErrGetDB_MainRelationshipList_Freethelist:
+  j += 0;
+  sqlite3_int64 k;
+  if (j) for (k = 0; k<j; k++) free(thelist[k]);
+  free(thelist);
+  
+ErrGetDB_MainRelationshipList:
   if (errmsg)
   {
     setdberrtext(errmsg);

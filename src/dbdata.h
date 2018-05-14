@@ -103,6 +103,7 @@ extern char newdb_sql_update_metainfo_version[];
 extern char newdb_sql_update_metainfo_last_edit[];
 
 extern char sql_select_mainpersonlist[];
+extern char sql_select_mainrelationshiplist[];
 
 #endif
 

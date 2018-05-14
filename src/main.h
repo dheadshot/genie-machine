@@ -7,9 +7,13 @@
 #include <iup/iup_config.h>
 
 /* --- Helper Functions --- */
+const char *str_fileext(const char *filename);
+const char *str_filename(const char *filename);
+long str_filepath(char *outpath, const char *infilename);
 int selectfile(Ihandle *parentdlg, int isopen);
 int populatemainlists(Ihandle *ih);
 void donewfile(Ihandle *ih);
+int dofileisopenactivation(Ihandle *ih);
 
 /* --- Callback Functions --- */
 int item_exit_action_cb(Ihandle *item_exit);

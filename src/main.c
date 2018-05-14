@@ -42,6 +42,42 @@ const char *str_fileext(const char *filename)
   return NULL;
 }
 
+const char *str_filename(const char *filename)
+{
+  /* Start at last char and work backwards */
+      	fprintf(stderr, "--FP = %s--\n", filename);
+  long len = (long) strlen(filename);
+      	fprintf(stderr, "--LEN(FN) = %ld--\n", len);
+  long offset = len - 1;
+      	fprintf(stderr, "--OFFSET = %ld--\n", offset);
+  while (offset > 0)
+  {
+    if (filename[offset] == '\\' || filename[offset] == '/')
+    {
+      offset++;
+      	fprintf(stderr, "--FN = '%s'--\n",filename + (sizeof(char)*offset));
+      return filename + (sizeof(char)*offset);
+    }
+    offset--;
+  }
+      	fprintf(stderr, "--FN = FP--\n");
+  return filename;
+}
+
+long str_filepath(char *outpath, const char *infilename)
+{
+  if (!outpath || !infilename) return -1;
+  const char *afn = str_filename(infilename);
+  if (afn == infilename)
+  {
+    outpath[0] = 0;
+    return 0;
+  }
+  long lenpath = ((long) afn) - ((long) infilename);
+  memcpy(outpath, infilename, lenpath);
+  return lenpath;
+}
+
 int selectfile(Ihandle *parentdlg, int isopen)
 {
   Ihandle *config = (Ihandle *) IupGetAttribute(parentdlg, "CONFIG");
@@ -153,6 +189,7 @@ int selectfile(Ihandle *parentdlg, int isopen)
         dir = IupGetAttribute(filedlg, "DIRECTORY");
         IupConfigSetVariableStr(config, "MainWindow", "LastDirectory", dir);
         IupSetStrAttribute(parentdlg, "FILENAME", filename);
+        IupSetStrAttribute(parentdlg, "FILE_DIRECTORY", dir);
         IupConfigRecentUpdate(config, filename);
         ans = 2;
       }
@@ -171,7 +208,9 @@ int populatemainlists(Ihandle *ih)
   ntsa plist;
   char *errmsg;
   personlist = IupGetDialogChild(ih, "PERSONLIST");
+  relationshiplist = IupGetDialogChild(ih, "RELATIONSHIPLIST");
   
+  /* Person List */
   IupSetAttribute(personlist, "1", NULL);
   plist = getdb_mainpersonlist();
   if (plist == NULL)
@@ -205,6 +244,45 @@ int populatemainlists(Ihandle *ih)
   
   free(plist);
   plist = NULL;
+  
+  /* Relationship List */
+  IupSetAttribute(relationshiplist, "1", NULL);
+  plist = getdb_mainrelationshiplist();
+  if (plist == NULL)
+  {
+    errmsg = (char *) malloc(sizeof(char) + (101+sstrlen(lastdberrtext)));
+    if (errmsg == NULL)
+    {
+      /* Show a default error message */
+      IupMessageError(IupGetDialog(ih), "There was an error accessing the database and an additional error generating the error message!");
+    }
+    else
+    {
+      if (lastdberrtext)
+        sprintf(errmsg, "There was an error accessing the database:\n %lu:%lu %s", getlastdberr(), lastdberl, lastdberrtext);
+      else
+        sprintf(errmsg, "There was an error '%lu:%lu' accessing the database!", getlastdberr(), lastdberl);
+      /* Show the error message */
+      IupMessageError(IupGetDialog(ih), errmsg);
+      free(errmsg);
+    }
+    return 0;
+  }
+  
+  //sqlite3_int64 i;
+  
+  for (i=0; plist[i] != NULL; i++)
+  {
+    IupSetStrAttribute(relationshiplist, "APPENDITEM", plist[i]);
+    free(plist[i]);
+  }
+  
+  free(plist);
+  plist = NULL;
+  
+  
+  
+  
 }
 
 void donewfile(Ihandle *ih)
@@ -235,6 +313,22 @@ void donewfile(Ihandle *ih)
   }
 }
 
+int dofileisopenactivation(Ihandle *ih)
+{
+  Ihandle *dlg = IupGetDialog(ih);
+  Ihandle *close_btn = IupGetDialogChild(ih, "CLOSE_BTN");
+  if (IupGetAttribute(dlg, "FILENAME"))
+  {
+    IupSetAttribute(close_btn,"ACTIVE", "YES");
+    return 1;
+  }
+  else
+  {
+    IupSetAttribute(close_btn,"ACTIVE", "NO");
+    return 0;
+  }
+}
+
 /* ---------------- Callback Functions ---------------- */
 
 int item_exit_action_cb(Ihandle *item_exit)
@@ -261,11 +355,12 @@ int item_new_action_cb(Ihandle *item_new)
 {
 //  if (IupGetAttribute(IupGetDialog(item_new),"FILENAME")) /* Close file */
   donewfile(item_new);
-  if (IupGetAttribute(IupGetDialog(item_new),"FILENAME"))
+  dofileisopenactivation(item_new);
+  /*if (IupGetAttribute(IupGetDialog(item_new),"FILENAME"))
   {
     Ihandle *close_btn = IupGetDialogChild(item_new,"CLOSE_BTN");
     IupSetAttribute(close_btn, "ACTIVE", "YES");
-  }
+  }*/
   return IUP_DEFAULT;
 }
 
@@ -305,31 +400,41 @@ int config_recent_cb(Ihandle *ih)
   {
     int rc = opendb(filename, 0);
         	fprintf(stderr,"--Opened file--\n");
-    if (rc != 1)
+    char *dir = (char *) malloc(sizeof(char)*(1+strlen(filename)));
+    
+    if (rc != 1 || !dir)
     {
-      	fprintf(stderr,"--Error: %lu with file %s--\n",getlastdberr(),filename);
-      errmsg = (char *) malloc(sizeof(char)*(101+strlen(filename)));
-      if (errmsg)
-      {
-        sprintf(errmsg,"There was an Error %lu opening the database \"%s\"!",getlastdberr(), filename);
-        IupMessageError(dlg,errmsg);
-        free(errmsg);
-      }
+      if (!dir) IupMessageError(dlg,"There was an \"Out of Memory\" error opening the database!");
       else
       {
-        IupMessageError(dlg,"There was an error opening the database.  Additionally, there was an error responding to this error!");
-      }
+        free(dir);
+        	fprintf(stderr,"--Error: %lu with file %s--\n",getlastdberr(),filename);
+        errmsg = (char *) malloc(sizeof(char)*(101+strlen(filename)));
+        if (errmsg)
+        {
+          sprintf(errmsg,"There was an Error %lu opening the database \"%s\"!",getlastdberr(), filename);
+          IupMessageError(dlg,errmsg);
+          free(errmsg);
+        }
+        else
+        {
+          IupMessageError(dlg,"There was an error opening the database.  Additionally, there was an error responding to this error!");
+        }
 //      ans = 0;
+      }
     }
     else
     {
 //      char *dir = IupGetAttribute(filedlg, "DIRECTORY");
 //      IupConfigSetVariableStr(config, "MainWindow", "LastDirectory", dir);
+      if (str_filepath(dir, filename) >= 0) IupSetStrAttribute(dlg, "FILE_DIRECTORY", dir);
+      free(dir);
       IupSetStrAttribute(dlg, "FILENAME", filename);
       IupConfigRecentUpdate(config, filename);
 //      ans = 2;
-      Ihandle *close_btn = IupGetDialogChild(ih, "CLOSE_BTN");
-      IupSetAttribute(close_btn,"ACTIVE", "YES");
+      dofileisopenactivation(ih);
+      /*Ihandle *close_btn = IupGetDialogChild(ih, "CLOSE_BTN");
+      IupSetAttribute(close_btn,"ACTIVE", "YES");*/
       populatemainlists(ih);
     }
   }
