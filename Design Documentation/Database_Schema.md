@@ -167,9 +167,11 @@ CREATE TABLE Relationship (
   Person2ID INTEGER DEFAULT NULL REFERENCES Person (PersonID) CHECK (Person2ID ISNULL or Person2ID IS NOT NULL or (Person2ID ISNULL and RelTypeID = 14)), -- Second person in relationship or NULL if unknown (or also NULL if N/A in adoption)
   RelTypeID INTEGER NOT NULL DEFAULT 7 REFERENCES RelType (RelTypeID), -- The type of relationship
   IsRomantic INTEGER DEFAULT 1 CHECK (IsRomantic IN (NULL, 0, 1)), -- Is the relationship a romantic or a platonic one? (NULL if unknown)
+  StartDate INTEGER NOT NULL REFERENCES Date (DateID), -- The date of the start of the relationship
   Description TEXT NOT NULL DEFAULT '',    -- Description of the Relationship
-  RelEndTypeID INTEGER NOT NULL DEFAULT 4 REFERENCES RelEndType (RelEndTypeID), -- The way the relationship ended
-  RelEndDesc TEXT DEFAULT '' NOT NULL,     -- Description of how the relationship ended
+  RelEndDate INTEGER REFERENCES Date (DateID), -- The date the relationship ended (or NULL if ongoing)
+  RelEndTypeID INTEGER DEFAULT NULL REFERENCES RelEndType (RelEndTypeID), -- The way the relationship ended (or NULL if ongoing)
+  RelEndDesc TEXT DEFAULT NULL,            -- Description of how the relationship ended (or NULL if ongoing)
   ConvRelID INTEGER DEFAULT NULL REFERENCES Relationship (RelID) CHECK (ConvRelID ISNULL or (ConvRelID IS NOT NULL and RelEndTypeID = 3)), -- If the Relationship End Type ID is 3 (converted), this links to the relationship it converted into.  May need a placeholder?
   Notes TEXT DEFAULT NULL,                 -- Any notes, however unofficial, on this relationship
   SourceID INTEGER DEFAULT NULL REFERENCES Source (SourceID) -- Source (or NULL if none)

@@ -339,9 +339,11 @@ Person1ID    | INTEGER   | Foreign  | N/A           | NOT NULL, Links to Person(
 Person2ID    | INTEGER   | Foreign  | NULL          | Links to Person(PersonID)                   | Second person in relationship or NULL if unknown (or also NULL if N/A in adoption)
 RelTypeID    | INTEGER   | Foreign  | 7             | NOT NULL, Links to RelType(RelTypeID)       | The type of relationship
 IsRomantic   | INTEGER   | N/A      | 1             | 0 or 1 or NULL                              | Is the relationship a romantic or a platonic one? (NULL if unknown)
+StartDate    | INTEGER   | Foreign  | N/A           | NOT NULL, Links to Date(DateID)             | The date of the start of the relationship
 Description  | TEXT      | N/A      | ''            | NOT NULL                                    | Description of the Relationship
-RelEndTypeID | INTEGER   | Foreign  | 4             | NOT NULL, Links to RelEndType(RelEndTypeID) | The way the relationship ended
-RelEndDesc   | TEXT      | N/A      | ''            | NOT NULL                                    | Description of how the relationship ended
+RelEndDate   | INTEGER   | Foreign  | NULL          | Links to Date(DateID)                       | The date the relationship ended (or NULL if ongoing)
+RelEndTypeID | INTEGER   | Foreign  | NULL          | Links to RelEndType(RelEndTypeID)           | The way the relationship ended (or NULL if ongoing)
+RelEndDesc   | TEXT      | N/A      | NULL          |                                             | Description of how the relationship ended (or NULL if ongoing)
 ConvRelID    | INTEGER   | Foreign  | NULL          | Links to Relationship(RelID)                | If the Relationship End Type ID is 3 (converted), this links to the relationship it converted into.
 Notes        | TEXT      | N/A      | NULL          |                                             | Any notes, however unofficial, on this relationship
 SourceID     | INTEGER   | Foreign  | NULL          | Links to Source(SourceID)                   | Source (or NULL if none)
