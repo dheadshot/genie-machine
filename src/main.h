@@ -14,6 +14,7 @@ int selectfile(Ihandle *parentdlg, int isopen);
 int populatemainlists(Ihandle *ih);
 void donewfile(Ihandle *ih);
 int dofileisopenactivation(Ihandle *ih);
+int doclosefile(Ihandle *ih);
 
 /* --- Callback Functions --- */
 int item_exit_action_cb(Ihandle *item_exit);

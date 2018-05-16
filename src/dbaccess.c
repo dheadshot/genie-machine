@@ -170,7 +170,11 @@ int closedb()
   unsetdberrtext();
   if (!dbisopen) return -1;
   int rc = sqlite3_close(db);
-  if (rc == SQLITE_OK || rc == SQLITE_DONE) return 1;
+  if (rc == SQLITE_OK || rc == SQLITE_DONE)
+  {
+    dbisopen = 0;
+    return 1;
+  }
   lastdberr = rc;
   return 0;
 }
@@ -489,7 +493,7 @@ ErrInitNewDB:
   return 0;
 }
 
-ntsa getdb_mainpersonlist()
+ntsa getdb_mainpersonlist(int maxname)
 {
   lastdberr = 0;
   lastdberl = 0;
@@ -580,6 +584,7 @@ ntsa getdb_mainpersonlist()
       {
         goto ErrGetDB_MainPersonList_Freethelist;
       }
+      if (maxname > 0 && strlen(fullname) > maxname) fullname[maxname] = 0;
       
       byear = (char *) malloc(sizeof(char)*(1+sstrlen(year1)+sstrlen(year2)+2));
       if (byear == NULL)
@@ -658,7 +663,7 @@ ErrGetDB_MainPersonList:
   return NULL;
 }
 
-ntsa getdb_mainrelationshiplist()
+ntsa getdb_mainrelationshiplist(int maxname)
 {
   lastdberr = 0;
   lastdberl = 0;
@@ -768,6 +773,7 @@ ntsa getdb_mainrelationshiplist()
       {
         goto ErrGetDB_MainRelationshipList_Freethelist;
       }
+      if (maxname > 0 && strlen(p1fullname) > maxname) p1fullname[maxname] = 0;
       if (p2nameformat || p2personid)
       {
         if (p2nameformat)
@@ -799,6 +805,7 @@ ntsa getdb_mainrelationshiplist()
         }
         strcpy(p2fullname,"?");
       }
+      if (maxname > 0 && strlen(p2fullname) > maxname) p2fullname[maxname] = 0;
       
       /* p1extname = (char *) malloc(sizeof(char)*(51+strlen(p1fullname)));
       if (!p1extname)

@@ -16,8 +16,8 @@ char *formatname(const char *familyname, const char *givenname,
 int opendb(char *dbfilename, int newfile);
 int closedb();
 int initnewdb();
-ntsa getdb_mainpersonlist();
-ntsa getdb_mainrelationshiplist();
+ntsa getdb_mainpersonlist(int maxname);
+ntsa getdb_mainrelationshiplist(int maxname);
 
 #ifndef __DBACCESS_DECLARE__
 extern char *lastdberrtext;

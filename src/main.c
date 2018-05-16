@@ -97,7 +97,7 @@ int selectfile(Ihandle *parentdlg, int isopen)
   IupSetAttributeHandle(filedlg, "PARENTDIALOG", parentdlg);
   
   IupPopup(filedlg, IUP_CENTERPARENT, IUP_CENTERPARENT);
-  if (IupGetInt(filedlg, "STATUS") != -1)
+  if (IupGetInt(filedlg, "STATUS") != -1 && doclosefile(parentdlg))
   {
     char *filename = IupGetAttribute(filedlg, "VALUE");
       	fprintf(stderr, "--FN = %s--\n",filename);
@@ -212,7 +212,7 @@ int populatemainlists(Ihandle *ih)
   
   /* Person List */
   IupSetAttribute(personlist, "1", NULL);
-  plist = getdb_mainpersonlist();
+  plist = getdb_mainpersonlist(50);
   if (plist == NULL)
   {
     errmsg = (char *) malloc(sizeof(char) + (101+sstrlen(lastdberrtext)));
@@ -247,7 +247,7 @@ int populatemainlists(Ihandle *ih)
   
   /* Relationship List */
   IupSetAttribute(relationshiplist, "1", NULL);
-  plist = getdb_mainrelationshiplist();
+  plist = getdb_mainrelationshiplist(50);
   if (plist == NULL)
   {
     errmsg = (char *) malloc(sizeof(char) + (101+sstrlen(lastdberrtext)));
@@ -287,7 +287,14 @@ int populatemainlists(Ihandle *ih)
 
 void donewfile(Ihandle *ih)
 {
-  if (selectfile(IupGetDialog(ih), 0) == 2)
+  Ihandle *dlg = IupGetDialog(ih);
+  char *filename = IupGetAttribute(dlg, "FILENAME");
+  if (filename && filename[0] && IupAlarm("Warning", 
+      "Are you sure you want to close the current file and create another?", "Yes", "No", NULL) != 1)
+  {
+    return;
+  }
+  if (selectfile(dlg, 0) == 2)
   {
   	fprintf(stderr, "--Initialising File--\n");
     if (initnewdb() != 1)
@@ -307,6 +314,12 @@ void donewfile(Ihandle *ih)
       {
         IupMessageError(IupGetDialog(ih), "Error Initialising Database!  Additionally, error processing this error!");
       }
+    }
+    else
+    {
+      char *filename = IupGetAttribute(dlg, "FILENAME");
+      Ihandle *cdblabel = IupGetDialogChild(ih, "CURRENTDB_LABEL");
+      IupSetStrAttribute(cdblabel, "TITLE", filename);
     }
   	fprintf(stderr, "--Finished Initialising File--\n");
     
@@ -329,6 +342,43 @@ int dofileisopenactivation(Ihandle *ih)
   }
 }
 
+int doclosefile(Ihandle *ih)
+{
+  int ans = 2;
+  Ihandle *dlg = IupGetDialog(ih);
+  Ihandle *cdblabel = IupGetDialogChild(ih, "CURRENTDB_LABEL");
+  char *filename = IupGetAttribute(dlg, "FILENAME");
+  int rc = closedb();
+  if (rc < 0) ans = 1;
+  if (!rc)
+  {
+    ans = 0;
+    char *errmsg = (char *) malloc(sizeof(char)*101);
+    if (errmsg)
+    {
+      sprintf(errmsg,"Error %d Encountered Closing Database!",getlastdberr());
+      IupMessageError(dlg, errmsg);
+      free(errmsg);
+    }
+    else
+    {
+      IupMessageError(dlg, "Error Encountered Closing Database!\nAdditionally, another error was encountered processing this error.");
+    }
+  }
+  if (ans)
+  {
+    if (filename)
+    {
+      IupSetAttribute(dlg, "FILENAME", NULL);
+    }
+    else ans = 1;
+    IupSetStrAttribute(cdblabel,"TITLE","-");
+    dofileisopenactivation(ih);
+  }
+  return ans;
+}
+
+
 /* ---------------- Callback Functions ---------------- */
 
 int item_exit_action_cb(Ihandle *item_exit)
@@ -341,7 +391,7 @@ int item_exit_action_cb(Ihandle *item_exit)
   if (filename && filename[0] && IupAlarm("Warning", 
       "Are you sure you want to exit Genie Machine?", "Yes", "No", NULL) != 1)
   {
-    return IUP_DEFAULT;
+    return IUP_IGNORE;
   }
   
   closedb();
@@ -364,6 +414,12 @@ int item_new_action_cb(Ihandle *item_new)
   return IUP_DEFAULT;
 }
 
+int item_close_action_cb(Ihandle *item_close)
+{
+  doclosefile(item_close);
+  return IUP_DEFAULT;
+}
+
 int config_recent_cb(Ihandle *ih)
 {
   Ihandle *dlg = IupGetDialog(ih);
@@ -375,6 +431,7 @@ int config_recent_cb(Ihandle *ih)
   {
     return IUP_DEFAULT;
   }
+  else doclosefile(ih);
   
   filename = IupGetAttribute(ih, "TITLE");
   /* TODO: Write routine to open the file in filename! */
@@ -433,6 +490,8 @@ int config_recent_cb(Ihandle *ih)
       IupConfigRecentUpdate(config, filename);
 //      ans = 2;
       dofileisopenactivation(ih);
+      Ihandle *cdblabel = IupGetDialogChild(ih, "CURRENTDB_LABEL");
+      IupSetStrAttribute(cdblabel, "TITLE", filename);
       /*Ihandle *close_btn = IupGetDialogChild(ih, "CLOSE_BTN");
       IupSetAttribute(close_btn,"ACTIVE", "YES");*/
       populatemainlists(ih);
@@ -499,6 +558,7 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
   IupSetAttribute(item_close, "NAME", "ITEM_CLOSE");
   IupSetAttribute(item_close, "IMAGE", "IUP_FileClose");
   IupSetAttribute(item_close, "ACTIVE", "NO");
+  IupSetCallback(item_close, "ACTION", (Icallback) item_close_action_cb);
   
   item_merge = IupItem("&Merge...", NULL);
   IupSetAttribute(item_merge, "NAME", "ITEM_MERGE");
@@ -625,6 +685,7 @@ Ihandle *create_toolbar(Ihandle *config)
   IupSetAttribute(close_btn, "CANFOCUS", "NO");
   IupSetAttribute(close_btn, "NAME", "CLOSE_BTN");
   IupSetAttribute(close_btn, "ACTIVE", "NO");
+  IupSetCallback(close_btn, "ACTION", (Icallback) item_close_action_cb);
   
   toolbar = IupHbox(
                     new_btn,
@@ -652,7 +713,7 @@ Ihandle *create_statusbar(Ihandle *config)
   
   statusbar = IupHbox(
     IupSetAttributes(IupLabel("-"),
-      "EXPAND=HORIZONTAL, NAME=CURRENTDB_LABEL, PADDING=10x5"),
+      "EXPAND=HORIZONTAL, NAME=CURRENTDB_LABEL, PADDING=10x5, ELLIPSIS=YES"),
     IupSetAttributes(IupLabel(NULL), "SEPARATOR=VERTICAL"),
     IupSetAttributes(IupLabel(" "),
       "EXPAND=HORIZONTAL, PADDING=10x5, NAME=DETAILS_LABEL, ELLIPSIS=YES"),
