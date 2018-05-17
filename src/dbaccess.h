@@ -18,6 +18,7 @@ int closedb();
 int initnewdb();
 ntsa getdb_mainpersonlist(int maxname);
 ntsa getdb_mainrelationshiplist(int maxname);
+ntsa getdb_mainsourcelist(int maxdesc);
 
 #ifndef __DBACCESS_DECLARE__
 extern char *lastdberrtext;

@@ -20,6 +20,7 @@ int doclosefile(Ihandle *ih);
 int item_exit_action_cb(Ihandle *item_exit);
 int item_new_action_cb(Ihandle *item_new);
 int config_recent_cb(Ihandle *ih);
+int item_open_action_cb(Ihandle *item_open);
 int file_menu_open_cb(Ihandle *ih);
 
 /* --- Main Functions --- */

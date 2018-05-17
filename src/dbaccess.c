@@ -1000,3 +1000,143 @@ ErrGetDB_MainRelationshipList:
   lastdberl = rl;
   return NULL;
 }
+
+ntsa getdb_mainsourcelist(int maxdesc)
+{
+  lastdberr = 0;
+  lastdberl = 0;
+  unsetdberrtext();
+  if (!dbisopen) return NULL;
+  
+  char *errmsg = NULL;
+  ntsa thelist;
+  int rc, rl = 0;
+  sqlite3_stmt *countstmt, *tblstmt;
+  sqlite3_int64 tblcount;
+  
+  rl++;
+  rc = sqlite3_prepare_v2(db, "SELECT Count(SourceID) FROM Source;", 36, &countstmt, NULL);
+  if (rc != SQLITE_OK) goto ErrGetDB_MainSourceList;
+  
+  rl++;
+  rc = sqlite3_step(countstmt);
+  if (rc != SQLITE_ROW && rc != SQLITE_DONE && rc != SQLITE_OK) goto ErrGetDB_MainSourceList;
+  
+  rl++;
+  tblcount = sqlite3_column_int64(countstmt,0);
+  
+  thelist = (ntsa) malloc(sizeof(char *) * (tblcount + 1));
+  if (thelist == NULL)
+  {
+    setdberrtext("Out of Memory loading data from Database!");
+    rc = 0;
+    goto ErrGetDB_MainSourceList;
+  }
+  thelist[tblcount] = NULL;
+  
+  rl++;
+  rc = sqlite3_finalize(countstmt);
+  if (rc != SQLITE_OK)
+  {
+    goto ErrGetDB_MainSourceList;
+  }
+  
+  if (tblcount == 0) return thelist;
+  
+  rl++;
+  rc = sqlite3_prepare_v2(db, sql_select_mainsourcelist, -1, &tblstmt, NULL);
+  if (rc != SQLITE_OK)
+  {
+    free(thelist);
+    goto ErrGetDB_MainSourceList;
+  }
+  
+  rl++;
+  rc = SQLITE_ROW;
+  sqlite3_int64 j=0, sourceid;
+  char *desc, *stype, *ldesc, *typeandid;
+  
+  while (rc == SQLITE_ROW)
+  {
+    rc = sqlite3_step(tblstmt);
+    if (rc != SQLITE_ROW && rc != SQLITE_DONE && rc != SQLITE_OK) goto ErrGetDB_MainSourceList_Freethelist;
+    
+    if (rc == SQLITE_ROW && j < tblcount)
+    {
+      desc = sqlite3_column_text(tblstmt, 0);
+      stype = sqlite3_column_text(tblstmt, 1);
+      sourceid = sqlite3_column_int64(tblstmt, 2);
+      
+      if (desc)
+      {
+        ldesc = (char *) malloc(sizeof(char)*(strlen(desc)+1));
+        if (!ldesc)
+        {
+          setdberrtext("Out of Memory!");
+          goto ErrGetDB_MainSourceList_Freethelist;
+        }
+        strcpy(ldesc, desc);
+        if (maxdesc > 0 && strlen(ldesc) > maxdesc) ldesc[maxdesc] = 0;
+      }
+      else
+      {
+        ldesc = (char *) malloc(sizeof(char));
+        if (!ldesc)
+        {
+          setdberrtext("Out of Memory!");
+          goto ErrGetDB_MainSourceList_Freethelist;
+        }
+        ldesc[0] = 0;
+      }
+      
+      typeandid = sqlite3_mprintf(" (%s, %lld)", stype, sourceid);
+      if (!typeandid)
+      {
+        free(ldesc);
+        setdberrtext("Out of Memory!");
+        goto ErrGetDB_MainSourceList_Freethelist;
+      }
+      
+      thelist[j] = (char *) malloc(sizeof(char)*(strlen(ldesc)+strlen(typeandid)+1));
+      if (!thelist[j])
+      {
+        free(ldesc);
+        sqlite3_free(typeandid);
+        setdberrtext("Out of Memory!");
+        goto ErrGetDB_MainSourceList_Freethelist;
+      }
+      strcpy(thelist[j],ldesc);
+      strcat(thelist[j],typeandid);
+      
+      free(ldesc);
+      ldesc = NULL;
+      sqlite3_free(typeandid);
+      typeandid = NULL;
+      
+      j++;
+    }
+  }
+  
+  rl++;
+  rc = sqlite3_finalize(tblstmt);
+  if (rc != SQLITE_OK) goto ErrGetDB_MainSourceList_Freethelist;
+  
+  return thelist;
+  
+  
+ErrGetDB_MainSourceList_Freethelist:
+  j += 0;
+  sqlite3_int64 k;
+  if (j) for (k = 0; k<j; k++) free(thelist[k]);
+  free(thelist);
+  
+ErrGetDB_MainSourceList:
+  if (errmsg)
+  {
+    setdberrtext(errmsg);
+    sqlite3_free(errmsg);
+  }
+  lastdberr = rc;
+  lastdberl = rl;
+  return NULL;
+}

@@ -5,6 +5,7 @@
 
 #define PROG_NAME "genie-machine"
 #define PROG_VER  "0.00.01"
+#define PROG_TITLE "The Genie Machine"
 
 
 #endif

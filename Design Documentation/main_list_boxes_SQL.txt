@@ -1,0 +1,73 @@
+# Person:
+
+SELECT
+  PersonName.FamilyName,
+  PersonName.GivenName,
+  PersonName.Patronymic,
+  PersonName.OtherNames,
+  PersonName.TitlePrefix,
+  PersonName.TitleSuffix,
+  PersonName.TitleInterPart,
+  PersonName.NameFormat,
+  Person.PersonID,
+  Date.DateTypeID,
+  Date.Year1,
+  Date.Year2
+FROM
+  Person
+         LEFT JOIN PersonName ON PersonName.PersonID = Person.PersonID
+         INNER JOIN Date ON Person.BirthDate = Date.DateID;
+
+# Relationship:
+
+SELECT
+  P1N.FamilyName,
+  P1N.GivenName,
+  P1N.Patronymic,
+  P1N.OtherNames,
+  P1N.TitlePrefix,
+  P1N.TitleSuffix,
+  P1N.TitleInterPart,
+  P1N.NameFormat,
+  P1.PersonID,
+  P2N.FamilyName,
+  P2N.GivenName,
+  P2N.Patronymic,
+  P2N.OtherNames,
+  P2N.TitlePrefix,
+  P2N.TitleSuffix,
+  P2N.TitleInterPart,
+  P2N.NameFormat,
+  P2.PersonID,
+  RelT.RelTypeTxt,
+  D1.DateTypeID,
+  D1.Year1,
+  D1.Year2,
+  D2.DateTypeID,
+  D2.Year1,
+  D2.Year2,
+  Rel.RelID
+FROM
+  Relationship AS Rel
+               INNER JOIN RelType AS RelT ON Rel.RelTypeID = RelT.RelTypeID
+               LEFT JOIN Person AS P1 ON Rel.Person1ID = P1.PersonID
+               LEFT JOIN Person AS P2 ON Rel.Person2ID = P2.PersonID
+               LEFT JOIN PersonName AS P1N ON P1N.PersonID = P1.PersonID
+               LEFT JOIN PersonName AS P2N on P2N.PersonID = P2.PersonID
+               INNER JOIN Date AS D1 ON Rel.StartDate = D1.DateID
+               LEFT JOIN Date AS D2 ON Rel.RelEndDate = D2.DateID
+ORDER BY
+  D1.Year1 ASC,
+  Rel.RelID ASC;
+
+# Source:
+
+SELECT
+  Source.Description,
+  SourceType.SourceTypeTxt,
+  Source.SourceID
+FROM
+  Source 
+         INNER JOIN SourceType ON Source.SourceTypeID = SourceType.SourceTypeID
+ORDER BY
+  Source.SourceID ASC;

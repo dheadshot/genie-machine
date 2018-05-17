@@ -209,6 +209,7 @@ int populatemainlists(Ihandle *ih)
   char *errmsg;
   personlist = IupGetDialogChild(ih, "PERSONLIST");
   relationshiplist = IupGetDialogChild(ih, "RELATIONSHIPLIST");
+  sourcelist = IupGetDialogChild(ih, "SOURCELIST");
   
   /* Person List */
   IupSetAttribute(personlist, "1", NULL);
@@ -280,9 +281,43 @@ int populatemainlists(Ihandle *ih)
   free(plist);
   plist = NULL;
   
+  /* Source List */
   
+  IupSetAttribute(sourcelist, "1", NULL);
+  plist = getdb_mainsourcelist(50);
+  if (plist == NULL)
+  {
+    errmsg = (char *) malloc(sizeof(char) + (101+sstrlen(lastdberrtext)));
+    if (errmsg == NULL)
+    {
+      /* Show a default error message */
+      IupMessageError(IupGetDialog(ih), "There was an error accessing the database and an additional error generating the error message!");
+    }
+    else
+    {
+      if (lastdberrtext)
+        sprintf(errmsg, "There was an error accessing the database:\n %lu:%lu %s", getlastdberr(), lastdberl, lastdberrtext);
+      else
+        sprintf(errmsg, "There was an error '%lu:%lu' accessing the database!", getlastdberr(), lastdberl);
+      /* Show the error message */
+      IupMessageError(IupGetDialog(ih), errmsg);
+      free(errmsg);
+    }
+    return 0;
+  }
   
+  //sqlite3_int64 i;
   
+  for (i=0; plist[i] != NULL; i++)
+  {
+    IupSetStrAttribute(sourcelist, "APPENDITEM", plist[i]);
+    free(plist[i]);
+  }
+  
+  free(plist);
+  plist = NULL;
+  
+  return 1;
 }
 
 void donewfile(Ihandle *ih)
@@ -330,14 +365,50 @@ int dofileisopenactivation(Ihandle *ih)
 {
   Ihandle *dlg = IupGetDialog(ih);
   Ihandle *close_btn = IupGetDialogChild(ih, "CLOSE_BTN");
-  if (IupGetAttribute(dlg, "FILENAME"))
+  Ihandle *personlist, *relationshiplist, *sourcelist;
+  char *filename, *dlgtitle;
+  const char *afn;
+  
+  personlist = IupGetDialogChild(ih, "PERSONLIST");
+  relationshiplist = IupGetDialogChild(ih, "RELATIONSHIPLIST");
+  sourcelist = IupGetDialogChild(ih, "SOURCELIST");
+  
+  filename = IupGetAttribute(dlg, "FILENAME");
+  
+  if (filename)
   {
     IupSetAttribute(close_btn,"ACTIVE", "YES");
+    IupSetAttribute(personlist,"ACTIVE", "YES");
+    IupSetAttribute(relationshiplist,"ACTIVE", "YES");
+    IupSetAttribute(sourcelist,"ACTIVE", "YES");
+    
+    afn = str_filename(filename);
+    dlgtitle = (char *) malloc(sizeof(char)*(3+strlen(afn)+strlen(PROG_TITLE)));
+    if (!dlgtitle)
+    {
+      IupSetAttribute(dlg, "TITLE", PROG_TITLE);
+    }
+    else
+    {
+      sprintf(dlgtitle, "%s - %s", afn, PROG_TITLE);
+      IupSetStrAttribute(dlg, "TITLE", dlgtitle);
+      free(dlgtitle);
+    }
+    
     return 1;
   }
   else
   {
     IupSetAttribute(close_btn,"ACTIVE", "NO");
+    IupSetAttribute(personlist,"ACTIVE", "NO");
+    IupSetAttribute(relationshiplist,"ACTIVE", "NO");
+    IupSetAttribute(sourcelist,"ACTIVE", "NO");
+    
+    IupSetAttribute(personlist,"1", NULL);
+    IupSetAttribute(relationshiplist,"1", NULL);
+    IupSetAttribute(sourcelist,"1", NULL);
+    IupSetAttribute(dlg, "TITLE", PROG_TITLE);
+    
     return 0;
   }
 }
@@ -501,6 +572,29 @@ int config_recent_cb(Ihandle *ih)
   return IUP_DEFAULT;
 }
 
+int item_open_action_cb(Ihandle *item_open)
+{
+  Ihandle *dlg = IupGetDialog(item_open);
+  Ihandle *config = (Ihandle *) IupGetAttribute(dlg, "CONFIG");
+  char *filename = IupGetAttribute(dlg, "FILENAME");
+  if (filename && filename[0] && IupAlarm("Warning", 
+      "Are you sure you want to close the current file and open another?", "Yes", "No", NULL) != 1)
+  {
+    return IUP_DEFAULT;
+  }
+  if (selectfile(dlg, 1) == 2)
+  {
+    filename = IupGetAttribute(dlg, "FILENAME");
+    IupConfigRecentUpdate(config, filename);
+    dofileisopenactivation(item_open);
+    Ihandle *cdblabel = IupGetDialogChild(item_open, "CURRENTDB_LABEL");
+    IupSetStrAttribute(cdblabel, "TITLE", filename);
+    populatemainlists(item_open);
+  }
+  
+  return IUP_DEFAULT;
+}
+
 int file_menu_open_cb(Ihandle *ih)
 {
   Ihandle *item_close = IupGetDialogChild(ih, "ITEM_CLOSE");
@@ -553,6 +647,7 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
   
   item_open = IupItem("&Open...\tCtrl+O", NULL);
   IupSetAttribute(item_open, "IMAGE", "IUP_FileOpen");
+  IupSetCallback(item_open, "ACTION", (Icallback) item_open_action_cb);
   
   item_close = IupItem("&Close", NULL);
   IupSetAttribute(item_close, "NAME", "ITEM_CLOSE");
@@ -677,6 +772,7 @@ Ihandle *create_toolbar(Ihandle *config)
   IupSetAttribute(open_btn, "FLAT", "YES");
   IupSetAttribute(open_btn, "TIP", "Open Existing File... (Ctrl+O)");
   IupSetAttribute(open_btn, "CANFOCUS", "NO");
+  IupSetCallback(open_btn, "ACTION", (Icallback) item_open_action_cb);
   
   close_btn = IupButton(NULL, NULL);
   IupSetAttribute(close_btn, "IMAGE", "IUP_FileClose");
@@ -797,7 +893,7 @@ Ihandle *create_mainwindow(Ihandle *config)
   dlg = IupDialog(vbox);
   IupSetAttributeHandle(dlg, "MENU", menu);
   IupSetAttribute(dlg, "SIZE", "HALFxHALF");
-  IupSetAttribute(dlg, "TITLE", "The Genie Machine");
+  IupSetAttribute(dlg, "TITLE", PROG_TITLE);
   IupSetCallback(dlg, "CLOSE_CB", (Icallback) item_exit_action_cb);
   
   /* Keyboard Shortcuts! */
