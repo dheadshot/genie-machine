@@ -449,6 +449,24 @@ int doclosefile(Ihandle *ih)
   return ans;
 }
 
+void toggle_bar_visibility(Ihandle *item, Ihandle *ih)
+{
+  if (IupGetInt(item, "VALUE"))
+  {
+    IupSetAttribute(ih, "FLOATING", "YES");
+    IupSetAttribute(ih, "VISIBLE", "NO");
+    IupSetAttribute(item, "VALUE", "OFF");
+  }
+  else
+  {
+    IupSetAttribute(ih, "FLOATING", "NO");
+    IupSetAttribute(ih, "VISIBLE", "YES");
+    IupSetAttribute(item, "VALUE", "ON");
+  }
+  
+  IupRefresh(ih); /* Refresh the Dialogue Layout */
+}
+
 
 /* ---------------- Callback Functions ---------------- */
 
@@ -595,6 +613,32 @@ int item_open_action_cb(Ihandle *item_open)
   return IUP_DEFAULT;
 }
 
+int item_showtoolbar_action_cb(Ihandle *item_showtoolbar)
+{
+  Ihandle *dlg = IupGetDialog(item_showtoolbar);
+  Ihandle *toolbar = IupGetDialogChild(item_showtoolbar, "TOOLBAR");
+  Ihandle *config = (Ihandle *) IupGetAttribute(dlg, "CONFIG");
+  
+  toggle_bar_visibility(item_showtoolbar, toolbar);
+  
+  IupConfigSetVariableStr(config, "MainWindow", "Toolbar", 
+                          IupGetAttribute(item_showtoolbar, "VALUE"));
+  return IUP_DEFAULT;
+}
+
+int item_showstatusbar_action_cb(Ihandle *item_showstatusbar)
+{
+  Ihandle *dlg = IupGetDialog(item_showstatusbar);
+  Ihandle *statusbar = IupGetDialogChild(item_showstatusbar, "STATUSBAR");
+  Ihandle *config = (Ihandle *) IupGetAttribute(dlg, "CONFIG");
+  
+  toggle_bar_visibility(item_showstatusbar, statusbar);
+  
+  IupConfigSetVariableStr(config, "MainWindow", "Statusbar", 
+                          IupGetAttribute(item_showstatusbar, "VALUE"));
+  return IUP_DEFAULT;
+}
+
 int file_menu_open_cb(Ihandle *ih)
 {
   Ihandle *item_close = IupGetDialogChild(ih, "ITEM_CLOSE");
@@ -676,10 +720,12 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
   item_showtoolbar = IupItem("Show &Toolbar", NULL);
   IupSetAttribute(item_showtoolbar, "NAME", "ITEM_SHOWTOOLBAR");
   IupSetAttribute(item_showtoolbar, "VALUE", "ON");
+  IupSetCallback(item_showtoolbar, "ACTION", (Icallback) item_showtoolbar_action_cb);
   
   item_showstatusbar = IupItem("Show &Statusbar", NULL);
   IupSetAttribute(item_showstatusbar, "NAME", "ITEM_SHOWSTATUSBAR");
   IupSetAttribute(item_showstatusbar, "VALUE", "ON");
+  IupSetCallback(item_showstatusbar, "ACTION", (Icallback) item_showstatusbar_action_cb);
   
   item_help = IupItem("Help...\tF1", NULL);
   
