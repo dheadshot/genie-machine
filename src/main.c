@@ -704,6 +704,54 @@ int file_menu_open_cb(Ihandle *ih)
   return IUP_DEFAULT;
 }
 
+int person_menu_open_cb(Ihandle *ih)
+{
+  Ihandle *personlist = IupGetDialogChild(ih, "PERSONLIST");
+  
+  Ihandle *item_newperson = IupGetDialogChild(ih, "ITEM_NEWPERSON");
+  Ihandle *item_editperson = IupGetDialogChild(ih, "ITEM_EDITPERSON");
+  Ihandle *item_viewperson = IupGetDialogChild(ih, "ITEM_VIEWPERSON");
+  Ihandle *item_deleteperson = IupGetDialogChild(ih, "ITEM_DELETEPERSON");
+  Ihandle *item_ancestraltree = IupGetDialogChild(ih, "ITEM_ANCESTRALTREE");
+  Ihandle *item_descendenttreefromperson = IupGetDialogChild(ih, "ITEM_DESCENDENTTREEFROMPERSON");
+  
+  char *filename = IupGetAttribute(IupGetDialog(ih), "FILENAME");
+  
+  int pselected = IupGetInt(personlist, "VALUE");
+  
+  if (filename && filename[0])
+  {
+    IupSetAttribute(item_newperson, "ACTIVE", "YES");
+    if (pselected)
+    {
+      IupSetAttribute(item_editperson, "ACTIVE", "YES");
+      IupSetAttribute(item_viewperson, "ACTIVE", "YES");
+      IupSetAttribute(item_deleteperson, "ACTIVE", "YES");
+      IupSetAttribute(item_ancestraltree, "ACTIVE", "YES");
+      IupSetAttribute(item_descendenttreefromperson, "ACTIVE", "YES");
+    }
+    else
+    {
+      IupSetAttribute(item_editperson, "ACTIVE", "NO");
+      IupSetAttribute(item_viewperson, "ACTIVE", "NO");
+      IupSetAttribute(item_deleteperson, "ACTIVE", "NO");
+      IupSetAttribute(item_ancestraltree, "ACTIVE", "NO");
+      IupSetAttribute(item_descendenttreefromperson, "ACTIVE", "NO");
+    }
+  }
+  else
+  {
+    IupSetAttribute(item_newperson, "ACTIVE", "NO");
+    IupSetAttribute(item_editperson, "ACTIVE", "NO");
+    IupSetAttribute(item_viewperson, "ACTIVE", "NO");
+    IupSetAttribute(item_deleteperson, "ACTIVE", "NO");
+    IupSetAttribute(item_ancestraltree, "ACTIVE", "NO");
+    IupSetAttribute(item_descendenttreefromperson, "ACTIVE", "NO");
+  }
+  
+  return IUP_DEFAULT;
+}
+
 /* ---------------- Main Functions ----------------- */
 
 Ihandle *create_mainwindow_menu(Ihandle *config)
@@ -724,6 +772,7 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
   Ihandle *view_menu, *view_submenu, *item_showtoolbar, *item_showstatusbar;
   Ihandle *help_menu, *help_submenu, *item_help, *item_setbrowser, *item_about;
   
+  /* File Menu items */
   item_new = IupItem("&New...\tCtrl+N", NULL); /* Dunno if it's a good idea to have a shortcut for New */
   IupSetAttribute(item_new, "IMAGE", "IUP_FileNew");
   IupSetCallback(item_new, "ACTION", (Icallback) item_new_action_cb);
@@ -756,6 +805,32 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
   IupSetAttribute(item_exit, "NAME", "ITEM_EXIT");
   IupSetCallback(item_exit, "ACTION", (Icallback) item_exit_action_cb);
   
+  /* Person Menu items */
+  item_newperson = IupItem("&New Person...", NULL);
+  IupSetAttribute(item_newperson, "NAME", "ITEM_NEWPERSON");
+  IupSetAttribute(item_newperson, "ACTIVE", "NO");
+  
+  item_editperson = IupItem("&Edit Person...", NULL);
+  IupSetAttribute(item_editperson, "NAME", "ITEM_EDITPERSON");
+  IupSetAttribute(item_editperson, "ACTIVE", "NO");
+  
+  item_viewperson = IupItem("&View Person...", NULL);
+  IupSetAttribute(item_viewperson, "NAME", "ITEM_VIEWPERSON");
+  IupSetAttribute(item_viewperson, "ACTIVE", "NO");
+  
+  item_deleteperson = IupItem("Dele&te Person", NULL);
+  IupSetAttribute(item_deleteperson, "NAME", "ITEM_DELETEPERSON");
+  IupSetAttribute(item_deleteperson, "ACTIVE", "NO");
+  
+  item_ancestraltree = IupItem("&Ancestral Tree of Person...", NULL);
+  IupSetAttribute(item_ancestraltree, "NAME", "ITEM_ANCESTRALTREE");
+  IupSetAttribute(item_ancestraltree, "ACTIVE", "NO");
+  
+  item_descendenttreefromperson = IupItem("&Descendent Tree from Person...", NULL);
+  IupSetAttribute(item_descendenttreefromperson, "NAME", "ITEM_DESCENDENTTREEFROMPERSON");
+  IupSetAttribute(item_descendenttreefromperson, "ACTIVE", "NO");
+  
+  /* View Menu items */
   item_showtoolbar = IupItem("Show &Toolbar", NULL);
   IupSetAttribute(item_showtoolbar, "NAME", "ITEM_SHOWTOOLBAR");
   IupSetAttribute(item_showtoolbar, "VALUE", "ON");
@@ -766,6 +841,7 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
   IupSetAttribute(item_showstatusbar, "VALUE", "ON");
   IupSetCallback(item_showstatusbar, "ACTION", (Icallback) item_showstatusbar_action_cb);
   
+  /* Help Menu items */
   item_help = IupItem("Help...\tF1", NULL);
   
 #ifndef WIN32
@@ -775,6 +851,8 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
 #endif
   
   item_about = IupItem("About...", NULL);
+  
+  /* Menus */
   
   recent_menu = IupMenu(NULL);
   
@@ -805,6 +883,17 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
                       item_exit,
                       NULL);
   
+  person_menu = IupMenu(
+                        item_newperson,
+                        item_editperson,
+                        item_viewperson,
+                        IupSeparator(),
+                        item_deleteperson,
+                        IupSeparator(),
+                        item_ancestraltree,
+                        item_descendenttreefromperson,
+                        NULL);
+  
   view_menu = IupMenu(
                       item_showtoolbar,
                       item_showstatusbar,
@@ -820,16 +909,19 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
                       NULL);
   
   file_submenu = IupSubmenu("&File", file_menu);
+  person_submenu = IupSubmenu("&Person", person_menu);
   view_submenu = IupSubmenu("&View", view_menu);
   help_submenu = IupSubmenu("&Help", help_menu);
   
   menu = IupMenu(
                  file_submenu,
+                 person_submenu,
                  view_submenu,
                  help_submenu,
                  NULL);
   
   IupSetCallback(file_menu, "OPEN_CB", (Icallback) file_menu_open_cb);
+  IupSetCallback(person_menu, "OPEN_CB", (Icallback) person_menu_open_cb);
   
   /* Initialise variables from the Config file */
   IupConfigRecentInit(config, recent_menu, config_recent_cb, 10);
