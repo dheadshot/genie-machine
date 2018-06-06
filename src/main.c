@@ -11,6 +11,7 @@
 #include "utf8.h"
 #include "proginfo.h"
 #include "dbaccess.h"
+#include "setbrowser.h"
 #include "types.h"
 
 #include "main.h"
@@ -639,6 +640,14 @@ int item_showstatusbar_action_cb(Ihandle *item_showstatusbar)
   return IUP_DEFAULT;
 }
 
+int item_setbrowser_action_cb(Ihandle *item_setbrowser)
+{
+  Ihandle *dlg = IupGetDialog(item_setbrowser);
+  Ihandle *config = (Ihandle *) IupGetAttribute(dlg, "CONFIG");
+  int changed = dosetbrowser(dlg, config);
+  return IUP_DEFAULT;
+}
+
 int file_menu_open_cb(Ihandle *ih)
 {
   Ihandle *item_close = IupGetDialogChild(ih, "ITEM_CLOSE");
@@ -729,7 +738,11 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
   
   item_help = IupItem("Help...\tF1", NULL);
   
+#ifndef WIN32
+  /* We don't need this under Windows apparently. */
   item_setbrowser = IupItem("Set &Web-Browser...", NULL);
+  IupSetCallback(item_setbrowser, "ACTION", (Icallback) item_setbrowser_action_cb);
+#endif
   
   item_about = IupItem("About...", NULL);
   

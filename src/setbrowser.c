@@ -8,6 +8,7 @@
 #include <errno.h>
 
 #include "utf8.h"
+#include "doerror.h"
 
 #include "setbrowser.h"
 
@@ -21,7 +22,7 @@ int setbrowser_test_action_cb(Ihandle *ih)
   
   if (!str || !str[0] || !hasnonwhitespace(str))
   {
-    IupMessageError(dlg, "You must enter a command!");
+    show_error("You must enter a command!", 1, NULL, dlg);
   }
   else
   {
@@ -34,7 +35,7 @@ int setbrowser_test_action_cb(Ihandle *ih)
     }
     else
     {
-      IupMessageError(dlg, "Failed to open browser using command!"); //This should be a warning
+      show_error("Failed to open browser using command!", 0, NULL, dlg); //Warning
     }
     free(acmd);
   }
@@ -54,14 +55,14 @@ int setbrowser_ok_action_cb(Ihandle *ih)
   Ihandle *dlg = IupGetDialog(ih);
   char *str = IupGetAttribute(txt, "VALUE");
   
-  if (!str || !str[0]) IupMessageError(dlg, "You must enter a command!");
+  if (!str || !str[0]) show_error("You must enter a command!", 1, NULL, dlg);
   else if (IupGetInt(ih, "ACTIVE") == 0)
   {
-    IupMessageError(dlg, "You must test the command first!");
+    show_error("You must test the command first!", 1, NULL, dlg);
   }
   else
   {
-    IupSetAttribute(IupGetDialog(ih), "STATUS", "1");
+    IupSetAttribute(dlg, "STATUS", "1");
     return IUP_CLOSE;
   }
   return IUP_DEFAULT;
@@ -73,7 +74,7 @@ int setbrowser_cancel_action_cb(Ihandle *ih)
   return IUP_CLOSE;
 }
 
-int dosetbrowser(Ihandle *parentdlg, *Ihandle config)
+int dosetbrowser(Ihandle *parentdlg, Ihandle *config)
 {
   Ihandle *sbdlg, *vbox, *hbox1, *hbox2, *okbtn, *cancelbtn, *testbtn, *txt, 
           *lbl1, *lbl2;
@@ -129,7 +130,7 @@ int dosetbrowser(Ihandle *parentdlg, *Ihandle config)
     }
     else
     {
-      IupMessageError(parentdlg, "Invalid Browser Filename!");
+      show_error("Invalid Browser Filename!", 1, NULL, parentdlg);
     }
   }
   IupDestroy(sbdlg);
