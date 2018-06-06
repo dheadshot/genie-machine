@@ -12,6 +12,7 @@
 #include "proginfo.h"
 #include "dbaccess.h"
 #include "setbrowser.h"
+#include "doerror.h"
 #include "types.h"
 
 #include "main.h"
@@ -113,7 +114,8 @@ int selectfile(Ihandle *parentdlg, int isopen)
       char *tmpfn = (char *) malloc(sizeof(char)*(10+strlen(filename)));
       if (!tmpfn)
       {
-        IupMessageError(parentdlg,"Error opening file: Out of Memory!");
+//        IupMessageError(parentdlg,"Error opening file: Out of Memory!");
+        show_error("Error opening file: Out of Memory!", 1, NULL, parentdlg);
         rc = 1;
       }
       else if (extnum == 1)
@@ -142,18 +144,22 @@ int selectfile(Ihandle *parentdlg, int isopen)
     {
       if (!rc)
       {
-        	fprintf(stderr, "--Error: file '%s' doesn't exist!--\n");
+/*        	fprintf(stderr, "--Error: file '%s' doesn't exist!--\n");
         errmsg = (char *) malloc(sizeof(char)*(101+strlen(filename)));
         if (errmsg)
         {
           sprintf(errmsg, "Error opening file: the file \"%s\" does not exist!", filename);
-          IupMessageError(parentdlg,errmsg);
+//          IupMessageError(parentdlg,errmsg);
+          show_error(errmsg, 1, NULL, parentdlg);
           free(errmsg);
         }
         else
         {
-          IupMessageError(parentdlg,"Error opening file: the file does not exist!\nAdditionally, an \"Out of Memory\" error was encountered processing the above error!");
+//          IupMessageError(parentdlg,"Error opening file: the file does not exist!\nAdditionally, an \"Out of Memory\" error was encountered processing the above error!");
+          show_error("Error opening file: the file does not exist!\nAdditionally, an \"Out of Memory\" error was encountered processing the above error!", 1, NULL, parentdlg);
         }
+*/
+        error_filedoesnotexist(filename, parentdlg);
       }
     }
     else
@@ -171,6 +177,7 @@ int selectfile(Ihandle *parentdlg, int isopen)
         	fprintf(stderr,"--Opened file--\n");
       if (rc != 1)
       {
+/*
         	fprintf(stderr,"--Error: %lu with file %s--\n",getlastdberr(),filename);
         errmsg = (char *) malloc(sizeof(char)*(101+strlen(filename)));
         if (errmsg)
@@ -183,6 +190,8 @@ int selectfile(Ihandle *parentdlg, int isopen)
         {
           IupMessageError(parentdlg,"There was an error opening the database.  Additionally, there was an error responding to this error!");
         }
+*/
+        error_openingdb(filename, getlastdberr(), parentdlg);
         ans = 0;
       }
       else
@@ -200,7 +209,7 @@ int selectfile(Ihandle *parentdlg, int isopen)
   IupDestroy(filedlg);
   IupSetAttribute(parentdlg, "AMENDED_FILEDLG_VALUE", NULL);
   	fprintf(stderr, "--Finished with Select File--\n");
-  return ans;/*IUP_DEFAULT;*/
+  return ans; /*IUP_DEFAULT;*/
 }
 
 int populatemainlists(Ihandle *ih)
@@ -217,10 +226,11 @@ int populatemainlists(Ihandle *ih)
   plist = getdb_mainpersonlist(50);
   if (plist == NULL)
   {
+/*
     errmsg = (char *) malloc(sizeof(char) + (101+sstrlen(lastdberrtext)));
     if (errmsg == NULL)
     {
-      /* Show a default error message */
+      / * Show a default error message * /
       IupMessageError(IupGetDialog(ih), "There was an error accessing the database and an additional error generating the error message!");
     }
     else
@@ -229,10 +239,12 @@ int populatemainlists(Ihandle *ih)
         sprintf(errmsg, "There was an error accessing the database:\n %lu:%lu %s", getlastdberr(), lastdberl, lastdberrtext);
       else
         sprintf(errmsg, "There was an error '%lu:%lu' accessing the database!", getlastdberr(), lastdberl);
-      /* Show the error message */
+      / * Show the error message * /
       IupMessageError(IupGetDialog(ih), errmsg);
       free(errmsg);
     }
+*/
+    error_accessingdb(getlastdberr(), lastdberl, lastdberrtext, IupGetDialog(ih));
     return 0;
   }
   
@@ -252,10 +264,11 @@ int populatemainlists(Ihandle *ih)
   plist = getdb_mainrelationshiplist(50);
   if (plist == NULL)
   {
+/*
     errmsg = (char *) malloc(sizeof(char) + (101+sstrlen(lastdberrtext)));
     if (errmsg == NULL)
     {
-      /* Show a default error message */
+      / * Show a default error message * /
       IupMessageError(IupGetDialog(ih), "There was an error accessing the database and an additional error generating the error message!");
     }
     else
@@ -264,10 +277,12 @@ int populatemainlists(Ihandle *ih)
         sprintf(errmsg, "There was an error accessing the database:\n %lu:%lu %s", getlastdberr(), lastdberl, lastdberrtext);
       else
         sprintf(errmsg, "There was an error '%lu:%lu' accessing the database!", getlastdberr(), lastdberl);
-      /* Show the error message */
+      / * Show the error message * /
       IupMessageError(IupGetDialog(ih), errmsg);
       free(errmsg);
     }
+*/
+    error_accessingdb(getlastdberr(), lastdberl, lastdberrtext, IupGetDialog(ih));
     return 0;
   }
   
@@ -288,10 +303,11 @@ int populatemainlists(Ihandle *ih)
   plist = getdb_mainsourcelist(50);
   if (plist == NULL)
   {
+/*
     errmsg = (char *) malloc(sizeof(char) + (101+sstrlen(lastdberrtext)));
     if (errmsg == NULL)
     {
-      /* Show a default error message */
+      / * Show a default error message * /
       IupMessageError(IupGetDialog(ih), "There was an error accessing the database and an additional error generating the error message!");
     }
     else
@@ -300,10 +316,12 @@ int populatemainlists(Ihandle *ih)
         sprintf(errmsg, "There was an error accessing the database:\n %lu:%lu %s", getlastdberr(), lastdberl, lastdberrtext);
       else
         sprintf(errmsg, "There was an error '%lu:%lu' accessing the database!", getlastdberr(), lastdberl);
-      /* Show the error message */
+      / * Show the error message * /
       IupMessageError(IupGetDialog(ih), errmsg);
       free(errmsg);
     }
+*/
+    error_accessingdb(getlastdberr(), lastdberl, lastdberrtext, IupGetDialog(ih));
     return 0;
   }
   
@@ -335,7 +353,8 @@ void donewfile(Ihandle *ih)
   	fprintf(stderr, "--Initialising File--\n");
     if (initnewdb() != 1)
     {
-      /* Compile and show Error Message */
+/*
+      / * Compile and show Error Message * /
   	fprintf(stderr, "--Error Initialising DB!--\n");
   	fprintf(stderr, "--Error '%lu:%lu': %s--\n",getlastdberr(),lastdberl,lastdberrtext);
       char *errmsg = (char *) malloc(sizeof(char)*(101+sstrlen(lastdberrtext)));
@@ -350,6 +369,8 @@ void donewfile(Ihandle *ih)
       {
         IupMessageError(IupGetDialog(ih), "Error Initialising Database!  Additionally, error processing this error!");
       }
+*/
+      error_initdb(getlastdberr(), lastdberl, lastdberrtext, IupGetDialog(ih));
     }
     else
     {
@@ -418,13 +439,14 @@ int doclosefile(Ihandle *ih)
 {
   int ans = 2;
   Ihandle *dlg = IupGetDialog(ih);
-  Ihandle *cdblabel = IupGetDialogChild(ih, "CURRENTDB_LABEL");
+  Ihandle *cdblabel = IupGetDialogChild(dlg, "CURRENTDB_LABEL");
   char *filename = IupGetAttribute(dlg, "FILENAME");
   int rc = closedb();
   if (rc < 0) ans = 1;
   if (!rc)
   {
     ans = 0;
+/*
     char *errmsg = (char *) malloc(sizeof(char)*101);
     if (errmsg)
     {
@@ -436,6 +458,8 @@ int doclosefile(Ihandle *ih)
     {
       IupMessageError(dlg, "Error Encountered Closing Database!\nAdditionally, another error was encountered processing this error.");
     }
+*/
+    error_closingdb(getlastdberr(), dlg);
   }
   if (ans)
   {
@@ -530,6 +554,7 @@ int config_recent_cb(Ihandle *ih)
   
   if (!fileexists)
   {
+/*
     	fprintf(stderr, "--Error: file '%s' doesn't exist!--\n");
     errmsg = (char *) malloc(sizeof(char)*(101+strlen(filename)));
     if (errmsg)
@@ -542,6 +567,8 @@ int config_recent_cb(Ihandle *ih)
     {
       IupMessageError(dlg,"Error opening file: the file does not exist!\nAdditionally, an \"Out of Memory\" error was encountered processing the above error!");
     }
+*/
+    error_filedoesnotexist(filename, dlg);
   }
   else
   {
@@ -551,10 +578,11 @@ int config_recent_cb(Ihandle *ih)
     
     if (rc != 1 || !dir)
     {
-      if (!dir) IupMessageError(dlg,"There was an \"Out of Memory\" error opening the database!");
+      if (!dir) show_error("There was an \"Out of Memory\" error opening the database!", 1, NULL, dlg);
       else
       {
         free(dir);
+/*
         	fprintf(stderr,"--Error: %lu with file %s--\n",getlastdberr(),filename);
         errmsg = (char *) malloc(sizeof(char)*(101+strlen(filename)));
         if (errmsg)
@@ -567,6 +595,8 @@ int config_recent_cb(Ihandle *ih)
         {
           IupMessageError(dlg,"There was an error opening the database.  Additionally, there was an error responding to this error!");
         }
+*/
+        error_openingdb(filename, getlastdberr(), dlg);
 //      ans = 0;
       }
     }
@@ -782,7 +812,10 @@ Ihandle *create_mainwindow_menu(Ihandle *config)
   
   help_menu = IupMenu(
                       item_help,
+#ifndef WIN32
+                      /* Again, Windows apparently doesn't need this... */
                       item_setbrowser,
+#endif
                       item_about,
                       NULL);
   
