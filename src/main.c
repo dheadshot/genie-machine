@@ -989,6 +989,8 @@ Ihandle *create_mainwindow(Ihandle *config)
   IupSetCallback(dlg, "CLOSE_CB", (Icallback) item_exit_action_cb);
   
   /* Keyboard Shortcuts! */
+  IupSetCallback(dlg, "K_cN", (Icallback) item_new_action_cb);
+  IupSetCallback(dlg, "K_cO", (Icallback) item_open_action_cb);
   
   /* Parent for predefined dialogs in closed functions */
   IupSetAttributeHandle(NULL, "PARENTDIALOG", dlg);
