@@ -679,6 +679,18 @@ int item_setbrowser_action_cb(Ihandle *item_setbrowser)
   return IUP_DEFAULT;
 }
 
+int item_newperson_action_cb(Ihandle *item_newperson)
+{
+  char *windowlist = NULL;
+  
+  if (!initwindowlist(&windowlist) || !addwindowtolist(&windowlist,"main"))
+  {
+    show_error("Out of Memory!", 1, NULL, NULL);
+    return IUP_DEFAULT;
+  }
+  /* TODO: Create the person, launch the window, etc... */
+}
+
 int file_menu_open_cb(Ihandle *ih)
 {
   Ihandle *item_close = IupGetDialogChild(ih, "ITEM_CLOSE");
