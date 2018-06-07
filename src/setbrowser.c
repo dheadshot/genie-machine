@@ -117,6 +117,7 @@ int dosetbrowser(Ihandle *parentdlg, Ihandle *config)
   IupSetAttributeHandle(sbdlg, "DEFAULTENTER", okbtn);
   IupSetAttributeHandle(sbdlg, "DEFAULTESC", cancelbtn);
   IupSetAttributeHandle(sbdlg, "PARENTDIALOG", parentdlg);
+  IupSetCallback(sbdlg, "CLOSE_CB", (Icallback) setbrowser_cancel_action_cb);
   
   IupPopup(sbdlg, IUP_CENTERPARENT, IUP_CENTERPARENT);
   if (IupGetInt(sbdlg, "STATUS") == 1)
