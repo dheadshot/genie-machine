@@ -13,39 +13,66 @@
 
 #include "windowlist.h"
 
-int initwindowlist(char **windowlist)
+int initwindowlist(char **windowlistvar)
 {
-  if (!windowlist) return 0;
-  *windowlist = (char *) malloc(sizeof(char));
-  if (!(*windowlist)) return 0;
-  (*windowlist)[0] = 0;
+  if (!windowlistvar) return 0;
+  *windowlistvar = (char *) malloc(sizeof(char));
+  if (!(*windowlistvar)) return 0;
+  (*windowlistvar)[0] = 0;
   return 1;
 }
 
-int freewindowlist(char **windowlist)
+int freewindowlist(char **windowlistvar)
 {
-  if (!windowlist || !(*windowlist)) return 0;
-  free(*windowlist);
+  if (!windowlistvar || !(*windowlistvar)) return 0;
+  free(*windowlistvar);
   return 1;
 }
 
-int addwindowtolist(char **windowlist, char *windowname)
+int addwindowtolist(char **windowlistvar, char *windowname)
 {
-  if (!windowlist || !(*windowlist) || !windowname) return 0;
+  if (!windowlistvar || !(*windowlistvar) || !windowname) return 0;
   unsigned long wllen = 0, wnlen = 0;
-  wllen = strlen(*windowlist);
+  wllen = strlen(*windowlistvar);
   wnlen = strlen(windowname);
   if (!wnlen) return 0;
   char *newwl = (char *) malloc(sizeof(char) * (3+wllen+wnlen));
   if (!newwl) return 0;
   if (wllen)
   {
-    strcpy(newwl, *windowlist);
+    strcpy(newwl, *windowlistvar);
     strcat(newwl, "\n");
   }
   else newwl[0] = 0;
   strcat(newwl, windowname);
-  free(*windowlist);
-  *windowlist = newwl;
+  free(*windowlistvar);
+  *windowlistvar = newwl;
   return 1;
+}
+
+int duplicatewindowlist(char **newwindowlistvar, char *windowlist)
+{
+  if (!newwindowlistvar || !windowlist) return 0;
+  *newwindowlistvar = (char *) malloc(sizeof(char)*(1+strlen(windowlist)));
+  if (!(*newwindowlistvar)) return 0;
+  strcpy(*newwindowlistvar, windowlist);
+  return 1;
+}
+
+int findwindowinlist(char *windowlist, char *windowname)
+/* Returns the window's position (index 0) in the list, or -1 if it isn't there. */
+{
+  unsigned long i = 0, j = 0, wnlen = strlen(windowname);
+  int n = 0;
+  for (i = 0; windowlist[i] != 0; i++)
+  {
+    if (windowlist[i] == '\n')
+    {
+      if (str_comparet(windowlist + (sizeof(char)+j),windowname,i-j, wnlen, 1) == 1) return n;
+      n++;
+      j = i + 1;
+    }
+  }
+  if (str_comparet(windowlist + (sizeof(char)+j),windowname,i-j, wnlen, 1) == 1) return n;
+  return -1;
 }

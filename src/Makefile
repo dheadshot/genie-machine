@@ -17,7 +17,7 @@ CFLAGS += ${DEFS}
 CC = gcc
 LINKER = g++
 
-OBJECTS = main.o dbdata.o dbaccess.o doerror.o safeiupconf.o utf8.o setbrowser.o
+OBJECTS = main.o dbdata.o dbaccess.o doerror.o safeiupconf.o utf8.o windowlist.o setbrowser.o
 
 .c.o:
 	${CC} ${CFLAGS} -c $<

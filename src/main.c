@@ -14,6 +14,7 @@
 #include "setbrowser.h"
 #include "doerror.h"
 #include "types.h"
+#include "windowlist.h"
 
 #include "main.h"
 
