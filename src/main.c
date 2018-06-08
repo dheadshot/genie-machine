@@ -11,10 +11,12 @@
 #include "utf8.h"
 #include "proginfo.h"
 #include "dbaccess.h"
-#include "setbrowser.h"
 #include "doerror.h"
 #include "types.h"
 #include "windowlist.h"
+
+#include "setbrowser.h"
+#include "newperson.h"
 
 #include "main.h"
 
@@ -689,6 +691,12 @@ int item_newperson_action_cb(Ihandle *item_newperson)
     return IUP_DEFAULT;
   }
   /* TODO: Create the person, launch the window, etc... */
+  
+  Ihandle *dlg = IupGetDialog(item_newperson);
+  Ihandle *config = (Ihandle *) IupGetAttribute(dlg, "CONFIG");
+  
+  sqlite3_int64 ans = donewperson(dlg, config, windowlist);
+  
 }
 
 int file_menu_open_cb(Ihandle *ih)
