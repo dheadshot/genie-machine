@@ -12,6 +12,7 @@
 #include "doerror.h"
 #include "types.h"
 #include "dbaccess.h"
+#include "windowlist.h"
 
 #include "newperson.h"
 
