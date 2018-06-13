@@ -26,6 +26,7 @@ int freewindowlist(char **windowlistvar)
 {
   if (!windowlistvar || !(*windowlistvar)) return 0;
   free(*windowlistvar);
+  (*windowlistvar) = NULL;
   return 1;
 }
 
