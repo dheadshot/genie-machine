@@ -23,6 +23,7 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   Ihandle *ethniclab, *ethnictxt, *ethnicunktgl, *ethnichbox;
   Ihandle *csexlab, *csexrbox, *csexhbox, *csexmopt, *csexfopt, *csexunkopt;
   Ihandle *genlab, *gentxt, *genunktgl, *genhbox;
+  Ihandle *nameslab, *nameseditbtn, *namesprevlab, *nameshbox;
   Ihandle *notelab, *noteeditbtn, *noteprevlab, *notehbox;
   Ihandle *bfrm, *bvbox;
   Ihandle *brellab, *brelchoosebtn, *brelprevlab, *brelhbox;
@@ -35,7 +36,7 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   Ihandle *dplacelab, *dplacetxt, *dplaceunktgl, *dplacehbox;
   Ihandle *daddrlab, *daddrprevlab, *daddreditbtn, *daddrnatgl, *daddrhbox;
   Ihandle *dagelab, *dageprevlab, *dageeditbtn, *dagehbox;
-  Ihandle *srclab, *srcprevlab, *srcchoosebtn;
+  Ihandle *srclab, *srcprevlab, *srcchoosebtn, *srchbox;
   Ihandle *okbtn, *cancelbtn, *helpbtn, *hbox1;
   
   int dlgans = 0;
@@ -67,8 +68,8 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   IupSetAttribute(ethnictxt, "EXPAND", "HORIZONTAL");
   
   ethnicunktgl = IupToggle("Unknown Ethnicity", NULL);
-  IupSetAttribute(ethnicunktgl, "NAME, "ETHNIC_UNKNOWN_TGL");
-  IupSetAttribute(ethnicunktgl, "VALUE, "OFF");
+  IupSetAttribute(ethnicunktgl, "NAME", "ETHNIC_UNKNOWN_TGL");
+  IupSetAttribute(ethnicunktgl, "VALUE", "OFF");
   
   ethnichbox = IupHbox(ethnictxt, ethnicunktgl, NULL); //<-Enclose
   
@@ -76,16 +77,16 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   IupSetAttribute(csexlab, "TITLE", "(Chromosonal) Sex:");
   
   csexmopt = IupToggle("Has at least one Y Chromosone\n(Usually Male)", NULL);
-  IupSetAttribute(csexopt, "NAME, "CSEX_MALE_TGL");
-  IupSetAttribute(csexopt, "VALUE, "OFF");
+  IupSetAttribute(csexmopt, "NAME", "CSEX_MALE_TGL");
+  IupSetAttribute(csexmopt, "VALUE", "OFF");
   
   csexfopt = IupToggle("Has No Y Chromosones\n(Usually Female)", NULL);
-  IupSetAttribute(csexfopt, "NAME, "CSEX_FEMALE_TGL");
-  IupSetAttribute(csexfopt, "VALUE, "OFF");
+  IupSetAttribute(csexfopt, "NAME", "CSEX_FEMALE_TGL");
+  IupSetAttribute(csexfopt, "VALUE", "OFF");
   
   csexunkopt = IupToggle("Unknown", NULL);
-  IupSetAttribute(csexunkopt, "NAME, "CSEX_UNKNOWN_TGL");
-  IupSetAttribute(csexunkopt, "VALUE, "ON");
+  IupSetAttribute(csexunkopt, "NAME", "CSEX_UNKNOWN_TGL");
+  IupSetAttribute(csexunkopt, "VALUE", "ON");
   
   csexhbox = IupHbox(csexmopt, csexfopt, csexunkopt, NULL);
   csexrbox = IupRadio(csexhbox); //<-Enclose
@@ -99,10 +100,23 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   IupSetAttribute(gentxt, "EXPAND", "HORIZONTAL");
   
   genunktgl = IupToggle("Unknown Gender", NULL);
-  IupSetAttribute(genunktgl, "NAME, "GENDER_UNKNOWN_TGL");
-  IupSetAttribute(genunktgl, "VALUE, "OFF");
+  IupSetAttribute(genunktgl, "NAME", "GENDER_UNKNOWN_TGL");
+  IupSetAttribute(genunktgl, "VALUE", "OFF");
   
   genhbox = IupHbox(gentxt, genunktgl, NULL); //<-Enclose
+  
+  nameslab = IupLabel(NULL); //<-Enclose
+  IupSetAttribute(nameslab, "TITLE", "Names:");
+  
+  namesprevlab = IupLabel(NULL);
+  IupSetAttribute(namesprevlab, "TITLE", "(None!)");
+  IupSetAttribute(namesprevlab, "NAME", "NAMES_PREVIEW_LAB");
+  IupSetAttribute(namesprevlab, "EXPAND", "HORIZONTAL");
+  
+  nameseditbtn = IupButton("Edit Names...", NULL);
+  IupSetAttribute(nameseditbtn, "NAME", "NAMES_EDIT_BTN");
+  
+  nameshbox = IupHbox(nameseditbtn, namesprevlab, NULL); //<-Enclose
   
   notelab = IupLabel(NULL); //<-Enclose
   IupSetAttribute(notelab, "TITLE", "Notes:");
@@ -128,7 +142,7 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   IupSetAttribute(brelprevlab, "NAME", "BIRTH_RELATIONSHIP_PREVIEW_LAB");
   IupSetAttribute(brelprevlab, "EXPAND", "HORIZONTAL");
   
-  brelhbox = hbox(brelchoosebtn, brelprevlab, NULL); //<--Enclose
+  brelhbox = IupHbox(brelchoosebtn, brelprevlab, NULL); //<--Enclose
   
   bdatelab = IupLabel(NULL); //<--Enclose
   IupSetAttribute(bdatelab, "TITLE", "Date of Birth:");
@@ -151,8 +165,8 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   IupSetAttribute(bplacetxt, "EXPAND", "HORIZONTAL");
   
   bplaceunktgl = IupToggle("Unknown Place of Birth", NULL);
-  IupSetAttribute(bplaceunktgl, "NAME, "BIRTH_PLACE_UNKNOWN_TGL");
-  IupSetAttribute(bplaceunktgl, "VALUE, "OFF");
+  IupSetAttribute(bplaceunktgl, "NAME", "BIRTH_PLACE_UNKNOWN_TGL");
+  IupSetAttribute(bplaceunktgl, "VALUE", "OFF");
   
   bplacehbox = IupHbox(bplacetxt, bplaceunktgl, NULL); //<--Enclose
   
@@ -168,8 +182,8 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   IupSetAttribute(baddreditbtn, "NAME", "BIRTH_ADDRESS_EDIT_BTN");
   
   baddrnatgl = IupToggle("Birthplace Has No Address", NULL);
-  IupSetAttribute(baddrnatgl, "NAME, "BIRTH_ADDRESS_NA_TGL");
-  IupSetAttribute(baddrnatgl, "VALUE, "OFF");
+  IupSetAttribute(baddrnatgl, "NAME", "BIRTH_ADDRESS_NA_TGL");
+  IupSetAttribute(baddrnatgl, "VALUE", "OFF");
   
   baddrhbox = IupHbox(baddreditbtn, baddrprevlab, baddrnatgl, NULL); //<--Enclose
   
@@ -180,8 +194,8 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   IupSetAttribute(bfrm, "TITLE", "Birth Details:");
   
   dalivetgl = IupToggle("Person is &Alive", NULL); //<-Enclose
-  IupSetAttribute(dalivetgl, "NAME, "DEATH_ALIVE_TGL");
-  IupSetAttribute(dalivetgl, "VALUE, "OFF");
+  IupSetAttribute(dalivetgl, "NAME", "DEATH_ALIVE_TGL");
+  IupSetAttribute(dalivetgl, "VALUE", "OFF");
   
   ddatelab = IupLabel(NULL); //<--Enclose
   IupSetAttribute(ddatelab, "TITLE", "Date of Death:");
@@ -204,8 +218,8 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   IupSetAttribute(dplacetxt, "EXPAND", "HORIZONTAL");
   
   dplaceunktgl = IupToggle("Unknown Place of Death", NULL);
-  IupSetAttribute(dplaceunktgl, "NAME, "DEATH_PLACE_UNKNOWN_TGL");
-  IupSetAttribute(dplaceunktgl, "VALUE, "OFF");
+  IupSetAttribute(dplaceunktgl, "NAME", "DEATH_PLACE_UNKNOWN_TGL");
+  IupSetAttribute(dplaceunktgl, "VALUE", "OFF");
   
   dplacehbox = IupHbox(dplacetxt, dplaceunktgl, NULL); //<--Enclose
   
@@ -221,8 +235,8 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   IupSetAttribute(daddreditbtn, "NAME", "DEATH_ADDRESS_EDIT_BTN");
   
   daddrnatgl = IupToggle("Deathplace Has No Address", NULL);
-  IupSetAttribute(daddrnatgl, "NAME, "DEATH_ADDRESS_NA_TGL");
-  IupSetAttribute(daddrnatgl, "VALUE, "OFF");
+  IupSetAttribute(daddrnatgl, "NAME", "DEATH_ADDRESS_NA_TGL");
+  IupSetAttribute(daddrnatgl, "VALUE", "OFF");
   
   daddrhbox = IupHbox(daddreditbtn, daddrprevlab, daddrnatgl, NULL); //<--Enclose
   
@@ -257,7 +271,7 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   IupSetAttribute(srcprevlab, "NAME", "SOURCE_PREVIEW_LAB");
   IupSetAttribute(srcprevlab, "EXPAND", "HORIZONTAL");
   
-  srchbox = hbox(srcchoosebtn, srcprevlab, NULL); //<-Enclose
+  srchbox = IupHbox(srcchoosebtn, srcprevlab, NULL); //<-Enclose
   
   okbtn = IupButton("&OK", NULL);
   IupSetAttribute(okbtn, "NAME", "OK_BTN");
@@ -274,7 +288,7 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   
   hbox1 = IupHbox(IupFill(), okbtn, cancelbtn, helpbtn, NULL); //<-Enclose
   
-  vbox = IupVbox(biolab, biohbox, ethniclab, ethnichbox, csexlab, csexrbox, genlab, genhbox, notelab, notehbox, bfrm, dalivetgl, dfrm, srclab, srchbox, hbox1, NULL);
+  vbox = IupVbox(biolab, biohbox, ethniclab, ethnichbox, csexlab, csexrbox, genlab, genhbox, nameslab, nameshbox, notelab, notehbox, bfrm, dalivetgl, dfrm, srclab, srchbox, hbox1, NULL);
   IupSetAttribute(vbox, "MARGIN", "10x10");
   IupSetAttribute(vbox, "GAP", "5");
   
