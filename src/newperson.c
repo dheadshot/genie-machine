@@ -75,11 +75,11 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   csexlab = IupLabel(NULL); //<-Enclose
   IupSetAttribute(csexlab, "TITLE", "(Chromosonal) Sex:");
   
-  csexmopt = IupToggle("Male\n(XY, XXY, XXXY, etc.)", NULL);
+  csexmopt = IupToggle("Has at least one Y Chromosone\n(Usually Male)", NULL);
   IupSetAttribute(csexopt, "NAME, "CSEX_MALE_TGL");
   IupSetAttribute(csexopt, "VALUE, "OFF");
   
-  csexfopt = IupToggle("Female\n(XX, XXX, XXXX, etc.)", NULL);
+  csexfopt = IupToggle("Has No Y Chromosones\n(Usually Female)", NULL);
   IupSetAttribute(csexfopt, "NAME, "CSEX_FEMALE_TGL");
   IupSetAttribute(csexfopt, "VALUE, "OFF");
   
