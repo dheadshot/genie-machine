@@ -30,7 +30,7 @@ int freewindowlist(char **windowlistvar)
   return 1;
 }
 
-int addwindowtolist(char **windowlistvar, char *windowname)
+int addwindowtolist(char **windowlistvar, const char *windowname)
 {
   if (!windowlistvar || !(*windowlistvar) || !windowname) return 0;
   unsigned long wllen = 0, wnlen = 0;
@@ -51,7 +51,7 @@ int addwindowtolist(char **windowlistvar, char *windowname)
   return 1;
 }
 
-int duplicatewindowlist(char **newwindowlistvar, char *windowlist)
+int duplicatewindowlist(char **newwindowlistvar, const char *windowlist)
 {
   if (!newwindowlistvar || !windowlist) return 0;
   *newwindowlistvar = (char *) malloc(sizeof(char)*(1+strlen(windowlist)));
@@ -60,7 +60,7 @@ int duplicatewindowlist(char **newwindowlistvar, char *windowlist)
   return 1;
 }
 
-int findwindowinlist(char *windowlist, char *windowname)
+int findwindowinlist(const char *windowlist, const char *windowname)
 /* Returns the window's position (index 0) in the list, or -1 if it isn't there. */
 {
   unsigned long i = 0, j = 0, wnlen = strlen(windowname);

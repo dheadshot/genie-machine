@@ -47,7 +47,7 @@ void tedit_toggle_bar_visibility(Ihandle *item, Ihandle *ih)
 int tedit_cancelbtn_action_cb(Ihandle *cancelbtn)
 {
   Ihandle *dlg = IupGetDialog(cancelbtn);
-  Ihandle *txt = IupGetDialogChild(okbtn, "MAIN_TEXT");
+  Ihandle *txt = IupGetDialogChild(dlg, "MAIN_TEXT");
   int dirty = IupGetInt(txt, "DIRTY");
   
   /* "Are you sure you wish to Cancel?" */
@@ -72,7 +72,7 @@ int tedit_cancelbtn_action_cb(Ihandle *cancelbtn)
 int tedit_okbtn_action_cb(Ihandle *okbtn)
 {
   Ihandle *dlg = IupGetDialog(okbtn);
-  Ihandle *txt = IupGetDialogChild(okbtn, "MAIN_TEXT");
+  Ihandle *txt = IupGetDialogChild(dlg, "MAIN_TEXT");
   
   char *returntext = IupGetAttribute(txt, "VALUE");
   
@@ -86,7 +86,7 @@ int tedit_okbtn_action_cb(Ihandle *okbtn)
   
   if (returntext) IupSetStrAttribute(dlg, "RETURN_TEXT", returntext);
   else IupSetStrAttribute(dlg, "RETURN_TEXT", "");
-  IupSetAttribute(dlg, "STATUS", 1);
+  IupSetAttribute(dlg, "STATUS", "1");
   return IUP_CLOSE;
 }
 
@@ -141,7 +141,8 @@ int tedit_maintext_caret_cb(Ihandle *ih, int lin, int col)
 
 int tedit_item_revert_action_cb(Ihandle *item_revert)
 {
-  Ihandle *txt = IupGetDialogChild(ih, "MAIN_TEXT");
+  Ihandle *dlg = IupGetDialog(item_revert);
+  Ihandle *txt = IupGetDialogChild(dlg, "MAIN_TEXT");
   int dirty = IupGetInt(txt, "DIRTY");
   
   /* "Are you sure you wish to Revert?" */
@@ -158,7 +159,7 @@ int tedit_item_revert_action_cb(Ihandle *item_revert)
 int tedit_item_copy_action_cb(Ihandle *item_copy)
 {
   Ihandle *clipboard = IupClipboard();
-  Ihandle *txt = IupGetDialogChild(ih, "MAIN_TEXT");
+  Ihandle *txt = IupGetDialogChild(item_copy, "MAIN_TEXT");
   if (IupGetAttribute(txt, "SELECTEDTEXT"))
   {
     IupSetAttribute(clipboard, "TEXT", IupGetAttribute(txt, "SELECTEDTEXT"));
@@ -169,7 +170,7 @@ int tedit_item_copy_action_cb(Ihandle *item_copy)
 
 int tedit_item_paste_action_cb(Ihandle *item_paste)
 {
-  Ihandle *txt = IupGetDialogChild(ih, "MAIN_TEXT");
+  Ihandle *txt = IupGetDialogChild(item_paste, "MAIN_TEXT");
   Ihandle *clipboard = IupClipboard();
   if (IupGetInt(clipboard, "TEXTAVAILABLE"))
   {
@@ -183,7 +184,7 @@ int tedit_item_paste_action_cb(Ihandle *item_paste)
 int tedit_item_cut_action_cb(Ihandle *item_cut)
 {
   Ihandle *clipboard = IupClipboard();
-  Ihandle *txt = IupGetDialogChild(ih, "MAIN_TEXT");
+  Ihandle *txt = IupGetDialogChild(item_cut, "MAIN_TEXT");
   if (IupGetAttribute(txt, "SELECTEDTEXT"))
   {
     IupSetAttribute(clipboard, "TEXT", IupGetAttribute(txt, "SELECTEDTEXT"));
@@ -196,7 +197,7 @@ int tedit_item_cut_action_cb(Ihandle *item_cut)
 
 int tedit_item_delete_action_cb(Ihandle *item_delete)
 {
-  Ihandle *txt = IupGetDialogChild(ih, "MAIN_TEXT");
+  Ihandle *txt = IupGetDialogChild(item_delete, "MAIN_TEXT");
   if (IupGetAttribute(txt, "SELECTEDTEXT"))
   {
     IupSetAttribute(txt, "SELECTEDTEXT", "");
@@ -207,7 +208,7 @@ int tedit_item_delete_action_cb(Ihandle *item_delete)
 
 int tedit_item_select_all_action_cb(Ihandle *item_select_all)
 {
-  Ihandle *txt = IupGetDialogChild(ih, "MAIN_TEXT");
+  Ihandle *txt = IupGetDialogChild(item_select_all, "MAIN_TEXT");
   IupSetFocus(txt);
   IupSetAttribute(txt, "SELECTION", "ALL");
   return IUP_DEFAULT;
@@ -218,7 +219,7 @@ int tedit_item_toolbar_action_cb(Ihandle *item_toolbar)
   Ihandle *toolbar = IupGetDialogChild(item_toolbar, "TEDIT_TOOLBAR");
   Ihandle *config = (Ihandle *) IupGetAttribute(IupGetDialog(item_toolbar), "CONFIG");
   
-  toggle_bar_visibility(item_toolbar, toolbar);
+  tedit_toggle_bar_visibility(item_toolbar, toolbar);
   
   IupConfigSetVariableStr(config, "TextEditor", "Toolbar", IupGetAttribute(item_toolbar, "VALUE"));
   return IUP_DEFAULT;
@@ -229,7 +230,7 @@ int tedit_item_statusbar_action_cb(Ihandle *item_statusbar)
   Ihandle *statusbar = IupGetDialogChild(item_statusbar, "TEDIT_STATUSBAR");
   Ihandle *config = (Ihandle *) IupGetAttribute(IupGetDialog(item_statusbar), "CONFIG");
   
-  toggle_bar_visibility(item_statusbar, statusbar);
+  tedit_toggle_bar_visibility(item_statusbar, statusbar);
   
   IupConfigSetVariableStr(config, "TextEditor", "Statusbar", IupGetAttribute(item_statusbar, "VALUE"));
   return IUP_DEFAULT;
@@ -252,7 +253,7 @@ int tedit_item_find_action_cb(Ihandle *item_find)
   Ihandle *mtext = IupGetDialogChild(dlg, "MAIN_TEXT");
   char *windowlist = IupGetAttribute(dlg, "WINDOW_LIST");
   
-  tfb_create(dlg, mtext, config, windowlist);
+  tfb_create_or_show(dlg, mtext, config, windowlist);
   
   return IUP_DEFAULT;
 }
@@ -269,11 +270,11 @@ int tedit_item_goto_action_cb(Ihandle *item_goto)
   if (gotoline)
   {
     int pos;
-    IupTextConvertLinColToPos(maintext, line, 0, &pos);
+    IupTextConvertLinColToPos(maintext, gotoline, 0, &pos);
     IupSetInt(maintext, "CARETPOS", pos);
     IupSetInt(maintext, "SCROLLTOPOS", pos);
     IupSetFocus(maintext);
-    tedit_maintext_caret_cb(maintext, line, 1);
+    tedit_maintext_caret_cb(maintext, gotoline, 1);
   }
   
   return IUP_DEFAULT;
@@ -321,7 +322,7 @@ Ihandle *tedit_makedlg(Ihandle *config, const char *caption)
   IupSetAttribute(maintext, "EXPAND", "YES");
   IupSetAttribute(maintext, "DIRTY", "NO");
   
-  font = IupConfigGetVariableStr(config, "TextEditor", "Font");
+  const char *font = IupConfigGetVariableStr(config, "TextEditor", "Font");
   if (font)
   {
     IupSetStrAttribute(maintext, "FONT", font);
@@ -519,7 +520,7 @@ Ihandle *tedit_makedlg(Ihandle *config, const char *caption)
   menu = IupMenu(sub_menu_contents, sub_menu_edit, sub_menu_insert, 
                  sub_menu_view, sub_menu_help, NULL);
   
-  vbox = IupVbox(toolbar_hb, multitext, lbl_statusbar, btns_hb, NULL);
+  vbox = IupVbox(toolbar_hb, maintext, lbl_statusbar, btns_hb, NULL);
   
   dlg = IupDialog(vbox);
   IupSetAttributeHandle(dlg, "MENU", menu);

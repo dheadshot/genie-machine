@@ -87,7 +87,7 @@ int tfb_find_close_action_cb(Ihandle *bt_close)
 
 Ihandle *tfb_create(Ihandle *config, Ihandle *maintext, Ihandle *parentdlg)
 {
-  Ihandle *box, *bt_next, *bt_close, *txt, *find_case;
+  Ihandle *dlg, *box, *bt_next, *bt_close, *txt, *find_case;
   
   txt = IupText(NULL);
   IupSetAttribute(txt, "NAME", "FIND_TEXT");
