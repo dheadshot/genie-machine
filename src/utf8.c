@@ -322,3 +322,32 @@ unsigned long sstrlen(const char *a)
   if (!a) return 0;
   return strlen(a);
 }
+
+unsigned long strcpy_count(char *outstr, char *instr, unsigned long numchars)
+{
+  if (!outstr || !instr) return 0;
+  long n = strcharcount(instr);
+  if (numchars > n)
+  {
+    strcpy(outstr, instr);
+    return n;
+  }
+  
+  unsigned long i=0, ib = 0, jb = 0, nb = strlen(instr);
+  int il, ji;
+  while (ib < nb)
+  {
+    if (i>numchars) break;
+    il = numbytesinchar(instr[ib]);
+    if (il<0) il = 1; //Assume broken chars are single-byte
+    for (ji = 0; ji<il;ji++)
+    {
+      outstr[jb] = instr[ib];
+      ib++;
+      jb++;
+    }
+    i++;
+  }
+  outstr[jb] = 0;
+  return i;
+}

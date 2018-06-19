@@ -74,6 +74,7 @@ int tgb_do_goto(Ihandle *parentdlg, char *prevwindowlist, int line_count)
   dlg = IupDialog(box);
   IupSetAttribute(dlg, "TITLE", "Go To Line");
   IupSetAttribute(dlg, "DIALOGFRAME", "YES");
+  IupSetStrAttribute(dlg, "PREVIOUS_WINDOW_LIST", prevwindowlist);
   IupSetAttributeHandle(dlg, "DEFAULTENTER", bt_ok);
   IupSetAttributeHandle(dlg, "DEFAULTESC", bt_cancel);
   IupSetAttributeHandle(dlg, "PARENTDIALOG", parentdlg);

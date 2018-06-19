@@ -241,7 +241,7 @@ int tedit_item_help_action_cb(Ihandle *ih)
   if (IupHelp("https://github.com/dheadshot/genie-machine") < 1) //TODO: Change this to the correct HELP link!
   {
     /*IupMessage("Error Opening Help","Error opening help file!  Please set the web browser for your system in the main window, using \"Help>Set Browser...\".");*/
-    show_error("Error opening help file!  Please set the web browser for your system in the main window, using \"Help>Set Browser...\".",0,"Error Opening Help",IupGetDialog(ih));
+    show_error("Error opening help file!  Please set the web browser for your system in the main window, using \"Help>Set Browser...\".",1,"Error Opening Help",IupGetDialog(ih));
   }
   return IUP_DEFAULT;
 }
@@ -553,6 +553,7 @@ int dotedit(Ihandle *config, const char *origintext, char **returntextvar, const
   if (!duplicatewindowlist(&windowlist, prevwindowlist) || 
       addwindowtolist(&windowlist, "tedit"))
   {
+    if (windowlist) freewindowlist(&windowlist);
     show_error("Out of Memory!", 1, NULL, parentdlg);
     return 0;
   }
@@ -582,7 +583,7 @@ int dotedit(Ihandle *config, const char *origintext, char **returntextvar, const
       if (*returntextvar)
       {
         strcpy(*returntextvar, returntext);
-        ans = 1;
+        ans = 1; // ans is only 1 if *returntextvar is set!
       }
       else
         show_error("Out of Memory!", 1, NULL, parentdlg);
