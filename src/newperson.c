@@ -14,6 +14,8 @@
 #include "dbaccess.h"
 #include "windowlist.h"
 
+#include "textedit.h"
+
 #include "newperson.h"
 
 
@@ -40,7 +42,7 @@ int newperson_bioeditbtn_action_cb(Ihandle *bioeditbtn)
   }
   if (rc)
   {
-    SetStrAttribute(dlg, "BIO_TEXT", newbio);
+    IupSetStrAttribute(dlg, "BIO_TEXT", newbio);
     char *tbio = (char *) malloc(sizeof(char)*(3+sstrlen(newbio))); //len+1+strlen("...") - 1 (since max if "..." is used will be < total len).
     if (!tbio)
     {
@@ -50,7 +52,7 @@ int newperson_bioeditbtn_action_cb(Ihandle *bioeditbtn)
     {
       strcpy_count(tbio, newbio, 22);
       if (strlen(newbio) > strlen(tbio)) strcat(tbio, "...");
-      SetStrAttribute(bioprevlab, "TITLE", tbio);
+      IupSetStrAttribute(bioprevlab, "TITLE", tbio);
       free(tbio);
     }
     free(newbio);
@@ -98,7 +100,7 @@ int newperson_noteeditbtn_action_cb(Ihandle *noteeditbtn)
   }
   if (rc)
   {
-    SetStrAttribute(dlg, "NOTES_TEXT", newnotes);
+    IupSetStrAttribute(dlg, "NOTES_TEXT", newnotes);
     char *tnotes = (char *) malloc(sizeof(char)*(3+sstrlen(newnotes))); //len+1+strlen("...") - 1 (since max if "..." is used will be < total len).
     if (!tnotes)
     {
@@ -108,7 +110,7 @@ int newperson_noteeditbtn_action_cb(Ihandle *noteeditbtn)
     {
       strcpy_count(tnotes, newnotes, 22);
       if (strlen(newnotes) > strlen(tnotes)) strcat(tnotes, "...");
-      SetStrAttribute(noteprevlab, "TITLE", tnotes);
+      IupSetStrAttribute(noteprevlab, "TITLE", tnotes);
       free(tnotes);
     }
     free(newnotes);
