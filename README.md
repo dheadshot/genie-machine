@@ -49,6 +49,7 @@ CD is a library/toolkit for doing vector graphics using the native GDI on Window
 - pdflib (should be included in the package)
 - ftgl (should be included in the package)
 - OpenGL development files
+- FTGL development files
 - Standard Windows development libraries (for the Windows version): gdi32, user32, comdlg32, gdiplus
 - Lua 5.1
 - X11 libraries (for the Linux version)
