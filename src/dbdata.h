@@ -106,6 +106,9 @@ extern char sql_select_mainpersonlist[];
 extern char sql_select_mainrelationshiplist[];
 extern char sql_select_mainsourcelist[];
 
+extern char sql_insert_newperson[];
+
+
 #endif
 
 

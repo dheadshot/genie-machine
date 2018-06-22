@@ -20,6 +20,10 @@
 
 
 
+sqlite3_int64 newperson_personid = 0;
+
+
+
 /* -------------- Callbacks -------------- */
 
 int newperson_bioeditbtn_action_cb(Ihandle *bioeditbtn)
@@ -78,6 +82,11 @@ int newperson_genunktgl_action_cb(Ihandle *genunktgl, int state)
   else IupSetAttribute(gentxt, "ACTIVE", "NO");
   
   return IUP_DEFAULT;
+}
+
+int newperson_nameseditbtn_action_cb(Ihandle *nameseditbtn)
+{
+  /* Launch nameslist dlg */
 }
 
 int newperson_noteeditbtn_action_cb(Ihandle *noteeditbtn)
@@ -244,6 +253,21 @@ int newperson_daddrnatgl_action_cb(Ihandle *daddrnatgl, int state)
   return IUP_DEFAULT;
 }
 
+int newperson_cancelbtn_action_cb(Ihandle *ih)
+{
+  Ihandle *dlg = IupGetDialog(ih);
+  
+  if (IupAlarm("Warning", 
+      "Are you sure you want to close the New Person dialogue box?  The person will not be added to the database and all the details you have included will be lost!", "Yes", "No", NULL) != 1)
+  {
+    return IUP_IGNORE;
+  }
+  
+  IupSetAttribute(dlg, "STATUS", "0");
+  IupSetAttribute(dlg, "CONFIG", NULL);
+  return IUP_CLOSE;
+}
+
 int newperson_helpbtn_action_cb(Ihandle *ih)
 {
   if (IupHelp("https://github.com/dheadshot/genie-machine") < 1) //TODO: Change this to the correct HELP link!
@@ -257,6 +281,21 @@ int newperson_helpbtn_action_cb(Ihandle *ih)
 
 
 /* -------------- Main -------------- */
+
+sqlite3_int64 addorupdaterecord(Ihandle *dlg, sqlite3_int64 recordid)
+{
+  Ihandle *ethnictxt = IupGetDialogChild(dlg, "ETHNIC_TXT");
+  Ihandle *ethnicunktgl = IupGetDialogChild(dlg, "ETHNIC_UNKNOWN_TGL");
+  
+  IupSetStrAttribute(dlg, "UNKNOWN_DEFAULT", "?");
+  char *unkdef = IupGetAttribute(dlg, "UNKNOWN_DEFAULT");
+  
+  char *bio = IupGetAttribute(dlg, "BIO_TEXT");
+  char *ethnicity;
+  if (IupGetInt(ethnicunktgl, "VALUE")) ethnicity = unkdef;
+  else ehnicity = IupGetAttribute(ethnictxt, "VALUE");
+  
+}
 
 sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevwindows)
 {
@@ -282,7 +321,8 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   Ihandle *okbtn, *cancelbtn, *helpbtn, *hbox1;
   
   int dlgans = 0;
-  sqlite3_int64 personid = 0;
+  
+  newperson_personid = 0;
   
   /* Generate the current WindowList */
   
@@ -566,9 +606,28 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   IupSetAttributeHandle(npdlg, "DEFAULTESC", cancelbtn);
   IupSetAttributeHandle(npdlg, "PARENTDIALOG", parentdlg);
   
-  IupSetAttribute(npdlg, "WINDOW_LIST", windowlist); //Rememeber to set to NULL at end, then free!
+  IupSetCallback(npdlg, "CLOSE_CB", (Icallback) newperson_cancelbtn_action_cb);
   
+  IupSetAttribute(npdlg, "WINDOW_LIST", windowlist); //Remember to set to NULL at end, then free!
   
+  IupPopup(npdlg, IUP_CENTERPARENT, IUP_CENTERPARENT);
+  
+  if (IupGetInt(npdlg, "STATUS"))
+  {
+    //OK
+    if (newperson_personid)
+    {
+      //Update
+    }
+    else
+    {
+      //Create
+    }
+  }
+  
+  IupSetAttribute(npdlg, "CONFIG", NULL);
+  IupSetAttribute(npdlg, "WINDOW_LIST", NULL);
+  freewindowlist(&windowlist);
   
   /* TODO: Finish this! */
 }

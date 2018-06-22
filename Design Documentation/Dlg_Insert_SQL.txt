@@ -1,0 +1,38 @@
+INSERT INTO Person
+(
+  PersonID,
+  Bio,
+  Ethnicity,
+  Sex,
+  Gender,
+  Notes,
+  ChildOfRelID,
+  IsAdopted,
+  BirthDate,
+  BirthPlace,
+  BirthAddrID,
+  DeathDate,
+  DeathPlace,
+  DeathAddrID,
+  DeathAge,
+  SourceID
+)
+VALUES
+(
+  NULL,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?,
+  ?
+);
