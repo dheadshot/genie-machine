@@ -28,18 +28,22 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   ------------------------------
   Att: BIO_TEXT
   Con: ETHNIC_TXT, ETHNIC_UNKNOWN_TGL
-  Con: CSEX_MALE_TGL, CSEX_FEMALE_TGL, CSEX_UNKNOWN_TGL
+  Con: CSEX_MALE_TGL, CSEX_FEMALE_TGL, CSEX_UNKNOWN_TGL, CSEX_RBOX
   Con: GENDER_TXT, GENDER_UNKNOWN_TGL
   DB (Names)
   Att: NOTES_TEXT
-  (BRel)
-  (BDate)
+  (BRel) Att: BREL_VALUE (sqlite3_int64 *)
+  [IsAdopted]
+  (BDate) Att: BDATE_VALUE (sqlite3_int64 *)
   Con: BIRTH_PLACE_TXT, BIRTH_PLACE_UNKNOWN_TGL
-  (BAddr), Con: BIRTH_ADDRESS_NA_TGL
+  (BAddr) Att: BADDR_VALUE (sqlite3_int64 *), Con: BIRTH_ADDRESS_NA_TGL
   Con: DEATH_ALIVE_TGL
-  (DDate)
+  (DDate) Att: DDATE_VALUE (sqlite3_int64 *)
   Con: DEATH_PLACE_TXT, DEATH_PLACE_UNKNOWN_TGL
-  (DAddr), Con: DEATH_ADDRESS_NA_TGL
-  (DAge)
-  (Source)
+  (DAddr) Att: DADDR_VALUE (sqlite3_int64 *), Con: DEATH_ADDRESS_NA_TGL
+  (DAge) Att: DAGE_VALUE
+  (Source) Att: SOURCE_VALUE (sqlite3_int64 *)
+  --------------------------------
+  Remember to delete the records for bdate etc. on cancel
+  and also to free the "(sqlite3_int64 *)"s  when the window closes!
 */

@@ -286,15 +286,169 @@ sqlite3_int64 addorupdaterecord(Ihandle *dlg, sqlite3_int64 recordid)
 {
   Ihandle *ethnictxt = IupGetDialogChild(dlg, "ETHNIC_TXT");
   Ihandle *ethnicunktgl = IupGetDialogChild(dlg, "ETHNIC_UNKNOWN_TGL");
+  Ihandle *csexrbox = IupGetDialogChild(dlg, "CSEX_RBOX");
+  Ihandle *csexmtgl = IupGetDialogChild(dlg, "CSEX_MALE_TGL");
+  Ihandle *csexftgl = IupGetDialogChild(dlg, "CSEX_FEMALE_TGL");
+  Ihandle *csexutgl = IupGetDialogChild(dlg, "CSEX_UNKNOWN_TGL");
+  Ihandle *genunktgl = IupGetDialogChild(dlg, "GENDER_UNKNOWN_TGL");
+  Ihandle *gentxt = IupGetDialogChild(dlg, "GENDER_TXT");
+  Ihandle *bplacetxt = IupGetDialogChild(dlg, "BIRTH_PLACE_TXT");
+  Ihandle *bplaceunktgl = IupGetDialogChild(dlg, "BIRTH_PLACE_UNKNOWN_TGL");
+  Ihandle *baddrnatgl = IupGetDialogChild(dlg, "BIRTH_ADDRESS_NA_TGL");
+  Ihandle *dalivetgl = IupGetDialogChild(dlg, "DEATH_ALIVE_TGL");
+  Ihandle *dplacetxt = IupGetDialogChild(dlg, "DEATH_PLACE_TXT");
+  Ihandle *dplaceunktgl = IupGetDialogChild(dlg, "DEATH_PLACE_UNKNOWN_TGL");
+  Ihandle *daddrnatgl = IupGetDialogChild(dlg, "DEATH_ADDRESS_NA_TGL");
+  
+  sqlite3_int64 ans = 0;
   
   IupSetStrAttribute(dlg, "UNKNOWN_DEFAULT", "?");
+  IupSetStrAttribute(dlg, "BLANK_DEFAULT", "");
   char *unkdef = IupGetAttribute(dlg, "UNKNOWN_DEFAULT");
+  char *blkdef = IupGetAttribute(dlg, "BLANK_DEFAULT");
   
+  /* Set Fields */
   char *bio = IupGetAttribute(dlg, "BIO_TEXT");
+  if (!bio) bio = blkdef;
+  
   char *ethnicity;
   if (IupGetInt(ethnicunktgl, "VALUE")) ethnicity = unkdef;
-  else ehnicity = IupGetAttribute(ethnictxt, "VALUE");
+  else ethnicity = IupGetAttribute(ethnictxt, "VALUE");
   
+  Ihandle *csexactive = IupGetAttribute(csexrbox, "VALUE_HANDLE");
+  if (csexactive == csexmtgl) IupSetStrAttribute(csexrbox, "VAL_CHAR", "M");
+  else if (csexactive == csexftgl) IupSetStrAttribute(csexrbox, "VAL_CHAR", "F");
+  else if (csexactive == csexutgl) IupSetStrAttribute(csexrbox, "VAL_CHAR", "?");
+  else
+  {
+    show_error("Chromosonal Sex not selected!  You must specify a chromosonal sex.", 1, NULL, dlg);
+    IupSetAttribute(dlg, "UNKNOWN_DEFAULT", NULL);
+    IupSetAttribute(dlg, "BLANK_DEFAULT", NULL);
+    return 0;
+  }
+  
+  char *gender;
+  if (IupGetInt(genunktgl, "VALUE")) gender = unkdef;
+  else gender = IupGetAttribute(gentxt, "VALUE");
+  
+  char *notes = IupGetAttribute(dlg, "NOTES_TEXT");
+  
+  sqlite3_int64 *brelref = (sqlite3_int64 *) IupGetAttribute(dlg, "BREL_VALUE");
+  int usebrel = 1;
+  sqlite3_int64 brel = 0;
+  if (!brelref || !(*brelref)) usebrel = 0;
+  else sqlite3_int64 = (*brelref);
+  
+  int isadopted = -1;
+  
+  sqlite3_int64 *bdateref = (sqlite3_int64 *) IupGetAttribute(dlg, "BDATE_VALUE");
+  sqlite3_int64 bdate = 0;
+  if (bdateref && (*bdateref)) bdate = (*bdateref);
+  
+  char *bplace;
+  if (IupGetInt(bplaceunktgl, "VALUE")) bplace = unkdef;
+  else bplace = IupGetAttribute(bplacetxt, "VALUE");
+  
+  int usebaddr = 0;
+  sqlite3_int64 baddr = 0, *baddrref = NULL;
+  if (!IupGetInt(bplaceunktgl, "VALUE") && !IupGetInt(baddrnatgl, "VALUE"))
+  {
+    baddrref = (sqlite3_int64 *) IupGetAttribute(dlg, "BADDR_VALUE");
+    if (baddrref && (*baddrref))
+    {
+      usebaddr = 1;
+      baddr = (*baddrref);
+    }
+  }
+  
+  int isdead = 1;
+  sqlite3_int64 ddate = 0, *ddateref = NULL;
+  char *dplace = NULL;
+  int usedaddr = 0;
+  sqlite3_int64 daddr = 0, *daddrref = NULL;
+  sqlite3_int64 dage = 0, *dageref = NULL;
+  if (IupGetInt(dalivetgl, "VALUE")) isdead = 0;
+  else
+  {
+    ddateref = (sqlite3_int64 *) IupGetAttribute(dlg, "DDATE_VALUE");
+    if (ddateref && (*ddateref)) ddate = (*ddateref);
+    
+    if (IupGetInt(dplaceunktgl, "VALUE")) dplace = unkdef;
+    else IupGetAttribute(dplacetxt, "VALUE");
+    
+    if (!IupGetInt(daddrnatgl, "VALUE")) && !IupGetInt(dplaceunktgl, "VALUE"))
+    {
+      daddrref = (sqlite3_int64 *) IupGetAttribute(dlg, "DADDR_VALUE");
+      if (daddrref && (*daddrref))
+      {
+        daddr = (*daddrref);
+        usedaddr = 1;
+      }
+    }
+    
+    dageref = (sqlite3_int64 *) IupGetAttribute(dlg, "DAGE_VALUE");
+    if (dageref && (*dageref)) dage = (*dageref);
+  }
+  
+  sqlite3_int64 source = 0, *sourceref = NULL;
+  int usesource = 0;
+  
+  sourceref = (sqlite3_int64 *) IupGetAttribute(dlg, "SOURCE_VALUE");
+  if (sourceref && (*sourceref))
+  {
+    usesource = 1;
+    source = (*sourceref);
+  }
+  
+  /* Send to database */
+  if (recordid)
+  {
+    /* Update */
+    /* TODO: Code to Update the database! */
+  }
+  else
+  {
+    /* Insert */
+    ans = addnewperson(bio, ethnicity, csex, gender, notes, usebrel, 
+                       brel, isadopted, bdate, bplace, usebaddr, 
+                       baddr, isdead, ddate, dplace, usedaddr, daddr, 
+                       dage, usesource, source);
+    if (!ans)
+    {
+      /* Handle error */
+      char *errmsg = NULL;
+      if (lastdberrtext)
+      {
+        errmsg = (char *) malloc(sizeof(char)*(101+strlen(lastdberrtext)));
+        if (!errmsg) show_error("Error committing data to database! Additionally, error processing the error!", 1, NULL, dlg);
+        else
+        {
+          sprintf(errmsg, "There was the following error sending data to the database: (%lu:%lu) %s", getlastdberr(), lastdberl, lastdberrtext);
+          show_error(errmsg, 1, "Database Error", dlg);
+          	fprintf(stderr, errmsg);
+          free(errmsg);
+        }
+      }
+      else
+      {
+        errmsg = (char *) malloc(sizeof(char)*101);
+        if (!errmsg) show_error("Error committing data to database! Additionally, error processing the error!", 1, NULL, dlg);
+        else
+        {
+        sprintf(errmsg, "There was an error %lu:%lu sending data to the database!", getlastdberr(), lastdberl);
+          show_error(errmsg, 1, "Database Error", dlg);
+          	fprintf(stderr, errmsg);
+          free(errmsg);
+        }
+      }
+    }
+    
+  }
+  
+  IupSetAttribute(dlg, "UNKNOWN_DEFAULT", NULL);
+  IupSetAttribute(dlg, "BLANK_DEFAULT", NULL);
+  
+  return ans;
 }
 
 sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevwindows)
@@ -387,6 +541,7 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   csexhbox = IupHbox(csexmopt, csexfopt, csexunkopt, NULL);
   csexrbox = IupRadio(csexhbox); //<-Enclose
   IupSetAttributeHandle(csexrbox, "VALUE_HANDLE", csexunkopt);
+  IupSetAttribute(csexrbox, "NAME", "CSEX_RBOX");
   
   genlab = IupLabel(NULL); //<-Enclose
   IupSetAttribute(genlab, "TITLE", "Gender");
