@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sqlite3.h>
+#include <ctype.h>
 
 #include "utf8.h"
 #include "proginfo.h"
@@ -1155,7 +1156,7 @@ sqlite3_int64 addnewperson(const char *bio, const char *ethnicity,
   lastdberr = 0;
   lastdberl = 0;
   unsetdberrtext();
-  if (!dbisopen) return NULL;
+  if (!dbisopen) return 0;
   
   /*char *errmsg = NULL;*/
   int rc, rl = 0;
@@ -1318,6 +1319,9 @@ sqlite3_int64 addnewperson(const char *bio, const char *ethnicity,
   rl++;
   if (sqlite3_finalize(npersonstmt) != SQLITE_OK) goto ErrAddNewPerson;
   
+  rl++;
+  ans = sqlite3_last_insert_rowid(db);
+  
   /* --Return-- */
   return ans;
   
@@ -1332,4 +1336,200 @@ ErrAddNewPerson:
   lastdberl = rl;
   return 0;
 }
-                           
+
+int modifynewperson(sqlite3_int64 personid, const char *bio, 
+                    const char *ethnicity, const char *sex, 
+                    const char *gender, const char *notes, 
+                    int userelkidid, sqlite3_int64 relkidid, 
+                    int isadopted,sqlite3_int64 bdateid, 
+                    const char *bplace, int usebaddr, 
+                    sqlite3_int64 baddrid, int isdead, 
+                    sqlite3_int64 ddateid, const char *dplace, 
+                    int usedaddr, sqlite3_int64 daddrid, 
+                    sqlite3_int64 dageid, int usesource, 
+                    sqlite3_int64 sourceid)
+{
+  lastdberr = 0;
+  lastdberl = 0;
+  unsetdberrtext();
+  if (!dbisopen) return 0;
+  
+  int rc, rl = 0;
+  sqlite3_stmt *npersonstmt;
+  sqlite3_int64 ans = 0;
+  
+  
+  rl++;
+  if (!personid)
+  {
+    setdberrtext("PersonID must be specified!");
+    goto ErrModifyNewPerson;
+  }
+  if (!bio || !sex || !bplace)
+  {
+    setdberrtext("Bio/Sex/Birth Place cannot be NULL!");
+    goto ErrModifyNewPerson;
+  }
+  if (isdead && !dplace)
+  {
+    setdberrtext("Death Place cannot be NULL if the person is dead!");
+    goto ErrModifyNewPerson;
+  }
+  if (toupper(sex[0]) != 'M' && toupper(sex[0]) != 'F' && sex[0] != '?')
+  {
+    setdberrtext("Invalid Sex!");
+    goto ErrModifyNewPerson;
+  }
+  if (isadopted > 1) isadopted = 1;
+  
+  rl++;
+  rc = sqlite3_prepare_v2(db, sql_update_newperson, -1, &npersonstmt, NULL);
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  rc = sqlite3_bind_text(npersonstmt, 1, bio, -1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  if (ethnicity)
+  {
+    rc = sqlite3_bind_text(npersonstmt, 2, ethnicity, -1, SQLITE_TRANSIENT);
+  }
+  else
+  {
+    rc = sqlite3_bind_null(npersonstmt, 2);
+  }
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  rc = sqlite3_bind_text(npersonstmt, 3, sex, 1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  if (gender)
+  {
+    rc = sqlite3_bind_text(npersonstmt, 4, gender, -1, SQLITE_TRANSIENT);
+  }
+  else
+  {
+    rc = sqlite3_bind_null(npersonstmt, 4);
+  }
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  if (notes)
+  {
+    rc = sqlite3_bind_text(npersonstmt, 5, notes, -1, SQLITE_TRANSIENT);
+  }
+  else
+  {
+    rc = sqlite3_bind_null(npersonstmt, 5);
+  }
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  if (userelkidid)
+  {
+    rc = sqlite3_bind_int64(npersonstmt, 6, relkidid);
+  }
+  else
+  {
+    rc = sqlite3_bind_null(npersonstmt, 6);
+  }
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  if (isadopted < 0)
+  {
+    rc = sqlite3_bind_null(npersonstmt, 7);
+  }
+  else
+  {
+    rc = sqlite3_bind_int(npersonstmt, 7, isadopted);
+  }
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  rc = sqlite3_bind_int64(npersonstmt, 8, bdateid);
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  rc = sqlite3_bind_text(npersonstmt, 9, bplace, -1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  if (usebaddr)
+  {
+    rc = sqlite3_bind_int64(npersonstmt, 10, baddrid);
+  }
+  else
+  {
+    rc = sqlite3_bind_null(npersonstmt, 10);
+  }
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  if (isdead)
+  {
+    if (sqlite3_bind_int64(npersonstmt, 11, ddateid) != SQLITE_OK) goto ErrModifyNewPerson;
+    rl++;
+    if (sqlite3_bind_text(npersonstmt, 12, dplace, -1, SQLITE_TRANSIENT) != SQLITE_OK) goto ErrModifyNewPerson;
+    rl++;
+    if (usedaddr)
+    {
+      rc = sqlite3_bind_int64(npersonstmt, 13, daddrid);
+    }
+    else
+    {
+      rc = sqlite3_bind_null(npersonstmt, 13);
+    }
+    if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+    rl++;
+    if (sqlite3_bind_int64(npersonstmt, 14, dageid) != SQLITE_OK) goto ErrModifyNewPerson; 
+  }
+  else
+  {
+    if (sqlite3_bind_null(npersonstmt, 11) != SQLITE_OK) goto ErrModifyNewPerson;
+    rl++;
+    if (sqlite3_bind_null(npersonstmt, 12) != SQLITE_OK) goto ErrModifyNewPerson;
+    rl++;
+    if (sqlite3_bind_null(npersonstmt, 13) != SQLITE_OK) goto ErrModifyNewPerson;
+    rl++;
+    if (sqlite3_bind_null(npersonstmt, 14) != SQLITE_OK) goto ErrModifyNewPerson;
+  }
+  
+  rl++;
+  if (usesource)
+  {
+    rc = sqlite3_bind_int64(npersonstmt, 15, sourceid);
+  }
+  else
+  {
+    rc = sqlite3_bind_null(npersonstmt, 15);
+  }
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  rc = sqlite3_bind_int64(npersonstmt, 16, personid);
+  if (rc != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  rl++;
+  rc = sqlite3_step(npersonstmt);
+  if (rc != SQLITE_ROW && rc != SQLITE_DONE && rc != SQLITE_OK)
+  {
+    setdberrtext(sqlite3_errmsg(db));
+    goto ErrModifyNewPerson;
+  }
+  
+  rl++;
+  if (sqlite3_finalize(npersonstmt) != SQLITE_OK) goto ErrModifyNewPerson;
+  
+  /* --Return-- */
+  return 1;
+  
+  
+ErrModifyNewPerson:
+  lastdberr = rc;
+  lastdberl = rl;
+  return 0;
+}

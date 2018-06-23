@@ -108,6 +108,8 @@ extern char sql_select_mainsourcelist[];
 
 extern char sql_insert_newperson[];
 
+extern char sql_update_newperson[];
+
 
 #endif
 

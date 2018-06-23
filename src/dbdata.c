@@ -8175,3 +8175,6 @@ char sql_select_mainsourcelist[] = "SELECT Source.Description, SourceType.Source
 
 /* Insert Data */
 char sql_insert_newperson[] = "INSERT INTO Person (PersonID, Bio, Ethnicity, Sex, Gender, Notes, ChildOfRelID, IsAdopted, BirthDate, BirthPlace, BirthAddrID, DeathDate, DeathPlace, DeathAddrID, DeathAge, SourceID) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+/* Update Data */
+char sql_update_newperson[] = "UPDATE Person SET Bio = ?, Ethnicity = ?, Sex = ?, Gender = ?, Notes = ?, ChildOfRelID = ?, IsAdopted = ?, BirthDate = ?, BirthPlace = ?, BirthAddrID = ?, DeathDate = ?, DeathPlace = ?, DeathAddrID = ?, DeathAge = ?, SourceID = ? WHERE PersonID = ?;";

@@ -315,7 +315,7 @@ sqlite3_int64 addorupdaterecord(Ihandle *dlg, sqlite3_int64 recordid)
   if (IupGetInt(ethnicunktgl, "VALUE")) ethnicity = unkdef;
   else ethnicity = IupGetAttribute(ethnictxt, "VALUE");
   
-  Ihandle *csexactive = IupGetAttribute(csexrbox, "VALUE_HANDLE");
+  Ihandle *csexactive = IupGetAttributeHandle(csexrbox, "VALUE_HANDLE");
   if (csexactive == csexmtgl) IupSetStrAttribute(csexrbox, "VAL_CHAR", "M");
   else if (csexactive == csexftgl) IupSetStrAttribute(csexrbox, "VAL_CHAR", "F");
   else if (csexactive == csexutgl) IupSetStrAttribute(csexrbox, "VAL_CHAR", "?");
@@ -326,6 +326,7 @@ sqlite3_int64 addorupdaterecord(Ihandle *dlg, sqlite3_int64 recordid)
     IupSetAttribute(dlg, "BLANK_DEFAULT", NULL);
     return 0;
   }
+  char *csex = IupGetAttribute(csexrbox, "VAL_CHAR");
   
   char *gender;
   if (IupGetInt(genunktgl, "VALUE")) gender = unkdef;
@@ -337,7 +338,7 @@ sqlite3_int64 addorupdaterecord(Ihandle *dlg, sqlite3_int64 recordid)
   int usebrel = 1;
   sqlite3_int64 brel = 0;
   if (!brelref || !(*brelref)) usebrel = 0;
-  else sqlite3_int64 = (*brelref);
+  else brel = (*brelref);
   
   int isadopted = -1;
   
@@ -376,7 +377,7 @@ sqlite3_int64 addorupdaterecord(Ihandle *dlg, sqlite3_int64 recordid)
     if (IupGetInt(dplaceunktgl, "VALUE")) dplace = unkdef;
     else IupGetAttribute(dplacetxt, "VALUE");
     
-    if (!IupGetInt(daddrnatgl, "VALUE")) && !IupGetInt(dplaceunktgl, "VALUE"))
+    if (!IupGetInt(daddrnatgl, "VALUE") && !IupGetInt(dplaceunktgl, "VALUE"))
     {
       daddrref = (sqlite3_int64 *) IupGetAttribute(dlg, "DADDR_VALUE");
       if (daddrref && (*daddrref))
@@ -404,7 +405,18 @@ sqlite3_int64 addorupdaterecord(Ihandle *dlg, sqlite3_int64 recordid)
   if (recordid)
   {
     /* Update */
-    /* TODO: Code to Update the database! */
+    if (modifynewperson(recordid, bio, ethnicity, csex, gender, 
+                        notes, usebrel, brel, isadopted, bdate, 
+                        bplace, usebaddr, baddr, isdead, ddate, 
+                        dplace, usedaddr, daddr, dage, usesource, 
+                        source))
+    {
+      ans = recordid;
+    }
+    else
+    {
+      ans = 0;
+    }
   }
   else
   {
@@ -413,36 +425,36 @@ sqlite3_int64 addorupdaterecord(Ihandle *dlg, sqlite3_int64 recordid)
                        brel, isadopted, bdate, bplace, usebaddr, 
                        baddr, isdead, ddate, dplace, usedaddr, daddr, 
                        dage, usesource, source);
-    if (!ans)
+    
+  }
+  if (!ans)
+  {
+    /* Handle error */
+    char *errmsg = NULL;
+    if (lastdberrtext)
     {
-      /* Handle error */
-      char *errmsg = NULL;
-      if (lastdberrtext)
-      {
-        errmsg = (char *) malloc(sizeof(char)*(101+strlen(lastdberrtext)));
-        if (!errmsg) show_error("Error committing data to database! Additionally, error processing the error!", 1, NULL, dlg);
-        else
-        {
-          sprintf(errmsg, "There was the following error sending data to the database: (%lu:%lu) %s", getlastdberr(), lastdberl, lastdberrtext);
-          show_error(errmsg, 1, "Database Error", dlg);
-          	fprintf(stderr, errmsg);
-          free(errmsg);
-        }
-      }
+      errmsg = (char *) malloc(sizeof(char)*(101+strlen(lastdberrtext)));
+      if (!errmsg) show_error("Error committing data to database! Additionally, error processing the error!", 1, NULL, dlg);
       else
       {
-        errmsg = (char *) malloc(sizeof(char)*101);
-        if (!errmsg) show_error("Error committing data to database! Additionally, error processing the error!", 1, NULL, dlg);
-        else
-        {
-        sprintf(errmsg, "There was an error %lu:%lu sending data to the database!", getlastdberr(), lastdberl);
-          show_error(errmsg, 1, "Database Error", dlg);
-          	fprintf(stderr, errmsg);
-          free(errmsg);
-        }
+        sprintf(errmsg, "There was the following error sending data to the database: (%lu:%lu) %s", getlastdberr(), lastdberl, lastdberrtext);
+        show_error(errmsg, 1, "Database Error", dlg);
+        	fprintf(stderr, errmsg);
+        free(errmsg);
       }
     }
-    
+    else
+    {
+      errmsg = (char *) malloc(sizeof(char)*101);
+      if (!errmsg) show_error("Error committing data to database! Additionally, error processing the error!", 1, NULL, dlg);
+      else
+      {
+        sprintf(errmsg, "There was an error %lu:%lu sending data to the database!", getlastdberr(), lastdberl);
+        show_error(errmsg, 1, "Database Error", dlg);
+        	fprintf(stderr, errmsg);
+        free(errmsg);
+      }
+    }
   }
   
   IupSetAttribute(dlg, "UNKNOWN_DEFAULT", NULL);
