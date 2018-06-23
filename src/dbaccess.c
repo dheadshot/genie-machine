@@ -44,7 +44,7 @@ unsigned long getlastdberr()
 
 char *formatname(const char *familyname, const char *givenname, 
                  const char *patronymic, const char *othernames, 
-                 const char *titleprefix, char *titlesuffix, 
+                 const char *titleprefix, const char *titlesuffix, 
                  const char *titleinterpart, const char *nameformat)
 {
   unsetdberrtext();
@@ -547,9 +547,10 @@ ntsa getdb_mainpersonlist(int maxname)
   rl++;
   rc = SQLITE_ROW;
   sqlite3_int64 personid, j = 0;
-  char *familyname, *givenname, *patronymic, *othernames, *titleprefix, 
-       *titlesuffix, *titleinterpart, *nameformat, *datetype, *year1, *year2, 
-       *fullname = NULL, *byear = NULL, *personidtxt = NULL;
+  const char *familyname, *givenname, *patronymic, *othernames, 
+             *titleprefix, *titlesuffix, *titleinterpart, *nameformat, 
+             *datetype, *year1, *year2;
+  char *fullname = NULL, *byear = NULL, *personidtxt = NULL;
   while (rc == SQLITE_ROW)
   {
     rc = sqlite3_step(tblstmt);
@@ -717,12 +718,14 @@ ntsa getdb_mainrelationshiplist(int maxname)
   rl++;
   rc = SQLITE_ROW;
   sqlite3_int64 j=0, p1personid, p2personid, relid;
-  char *p1familyname, *p1givenname, *p1patronymic, *p1othernames, 
-       *p1titleprefix, *p1titlesuffix, *p1titleinterpart, *p1nameformat, 
-       *p2familyname, *p2givenname, *p2patronymic, *p2othernames, 
-       *p2titleprefix, *p2titlesuffix, *p2titleinterpart, *p2nameformat, 
-       *reltype, *d1datetype, *d1year1, *d1year2, *d2datetype, *d2year1, 
-       *d2year2, *p1fullname, *p2fullname, *p1extname, *p2extname, *sdate, 
+  const char *p1familyname, *p1givenname, *p1patronymic, 
+             *p1othernames, *p1titleprefix, *p1titlesuffix, 
+             *p1titleinterpart, *p1nameformat, *p2familyname, 
+             *p2givenname, *p2patronymic, *p2othernames, 
+             *p2titleprefix, *p2titlesuffix, *p2titleinterpart, 
+             *p2nameformat, *reltype, *d1datetype, *d1year1, *d1year2, 
+             *d2datetype, *d2year1, *d2year2;
+  char *p1fullname, *p2fullname, *p1extname, *p2extname, *sdate, 
        *edate, *daterange, *relidtxt;
   
   while (rc == SQLITE_ROW)
@@ -1055,7 +1058,8 @@ ntsa getdb_mainsourcelist(int maxdesc)
   rl++;
   rc = SQLITE_ROW;
   sqlite3_int64 j=0, sourceid;
-  char *desc, *stype, *ldesc, *typeandid;
+  const char *desc, *stype;
+  char *ldesc, *typeandid;
   
   while (rc == SQLITE_ROW)
   {
