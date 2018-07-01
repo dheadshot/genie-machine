@@ -26,22 +26,22 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
 /*
   Fields' Attributes/Controls
   ------------------------------
-  Att: BIO_TEXT
+  Att: BIO_TEXT	#Required?
   Con: ETHNIC_TXT, ETHNIC_UNKNOWN_TGL
-  Con: CSEX_MALE_TGL, CSEX_FEMALE_TGL, CSEX_UNKNOWN_TGL, CSEX_RBOX
-  Con: GENDER_TXT, GENDER_UNKNOWN_TGL
+  Con: CSEX_MALE_TGL, CSEX_FEMALE_TGL, CSEX_UNKNOWN_TGL, CSEX_RBOX #R
+  Con: GENDER_TXT, GENDER_UNKNOWN_TGL	#R
   DB (Names)
   Att: NOTES_TEXT
   (BRel) Att: BREL_VALUE (sqlite3_int64 *)
   [IsAdopted]
-  (BDate) Att: BDATE_VALUE (sqlite3_int64 *)
-  Con: BIRTH_PLACE_TXT, BIRTH_PLACE_UNKNOWN_TGL
+  (BDate) Att: BDATE_VALUE (sqlite3_int64 *)	#Required
+  Con: BIRTH_PLACE_TXT, BIRTH_PLACE_UNKNOWN_TGL	#R
   (BAddr) Att: BADDR_VALUE (sqlite3_int64 *), Con: BIRTH_ADDRESS_NA_TGL
   Con: DEATH_ALIVE_TGL
-  (DDate) Att: DDATE_VALUE (sqlite3_int64 *)
-  Con: DEATH_PLACE_TXT, DEATH_PLACE_UNKNOWN_TGL
+  (DDate) Att: DDATE_VALUE (sqlite3_int64 *)	#Required if dead
+  Con: DEATH_PLACE_TXT, DEATH_PLACE_UNKNOWN_TGL	#R if dead
   (DAddr) Att: DADDR_VALUE (sqlite3_int64 *), Con: DEATH_ADDRESS_NA_TGL
-  (DAge) Att: DAGE_VALUE
+  (DAge) Att: DAGE_VALUE	#Required if dead
   (Source) Att: SOURCE_VALUE (sqlite3_int64 *)
   --------------------------------
   Remember to delete the records for bdate etc. on cancel

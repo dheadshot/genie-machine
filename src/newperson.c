@@ -253,6 +253,56 @@ int newperson_daddrnatgl_action_cb(Ihandle *daddrnatgl, int state)
   return IUP_DEFAULT;
 }
 
+/* --------------- OK/Cancel/Help --------------- */
+
+int newperson_okbtn_action_cb(Ihandle *ih)
+{
+  //Check all required fields, then submit if ok?
+  
+  Ihandle *dlg = IupGetDialog(ih);
+  Ihandle *csexrbox = IupGetDialogChild(dlg, "CSEX_RBOX");
+  Ihandle *csexutgl = IupGetDialogChild(dlg, "CSEX_UNKNOWN_TGL");
+  Ihandle *genunktgl = IupGetDialogChild(dlg, "GENDER_UNKNOWN_TGL");
+  Ihandle *gentxt = IupGetDialogChild(dlg, "GENDER_TXT");
+  Ihandle *bdateeditbtn = IupGetDialogChild(dlg, "BIRTH_DATE_EDIT_BTN");
+  Ihandle *bplacetxt = IupGetDialogChild(dlg, "BIRTH_PLACE_TXT");
+  Ihandle *bplaceunktgl = IupGetDialogChild(dlg, "BIRTH_PLACE_UNKNOWN_TGL");
+  
+  //CSex
+  Ihandle *csexactive = IupGetAttributeHandle(csexrbox, "VALUE_HANDLE");
+  if (!csexactive)
+  {
+    show_error("Chromosonal Sex not selected!  You must specify a chromosonal sex.", 1, NULL, dlg);
+    IupSetFocus(csexutgl);
+    return IUP_IGNORE;
+  }
+  
+  //Gender
+  if (IupGetInt(genunktgl, "VALUE") == 0 && sstrlen(IupGetAttribute(gentxt, "VALUE")) == 0)
+  {
+    show_error("Gender not specified!  If you don't know the gender of the person, select the \"Unknown Gender\" box.", 1, NULL, dlg);
+    IupSetFocus(genunktgl);
+    return IUP_IGNORE;
+  }
+  
+  //BDate
+  sqlite3_int64 *bdateref = (sqlite3_int64 *) IupGetAttribute(dlg, "BDATE_VALUE");
+  sqlite3_int64 bdate = 0;
+  if (bdateref && (*bdateref)) bdate = (*bdateref);
+  if (!bdate)
+  {
+    show_error("Birth Date not set!  You must specify a birth date for each person.", 1, NULL, dlg);
+    IupSetFocus(bdateeditbtn);
+    return IUP_IGNORE;
+  }
+  
+  //BPlace
+  
+  
+  /* TODO: Finish this section */
+  
+}
+
 int newperson_cancelbtn_action_cb(Ihandle *ih)
 {
   Ihandle *dlg = IupGetDialog(ih);
@@ -751,7 +801,8 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   
   cancelbtn = IupButton("&Cancel", NULL);
   IupSetAttribute(cancelbtn, "NAME", "CANCEL_BTN");
-  IupSetAttribute(cancelbtn, "PADDING", "10x2"); //TODO: CB This!
+  IupSetAttribute(cancelbtn, "PADDING", "10x2");
+  IupSetCallback(helpbtn, "ACTION", (Icallback) newperson_cancelbtn_action_cb);
   
   helpbtn = IupButton("&Help...", NULL);
   IupSetAttribute(helpbtn, "NAME", "HELP_BTN");
@@ -791,6 +842,11 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
       //Create
     }
   }
+  else if (newperson_personid)
+  {
+    //Delete record data
+  }
+  
   
   IupSetAttribute(npdlg, "CONFIG", NULL);
   IupSetAttribute(npdlg, "WINDOW_LIST", NULL);
