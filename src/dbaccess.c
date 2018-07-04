@@ -1360,7 +1360,7 @@ int modifynewperson(sqlite3_int64 personid, const char *bio,
   
   int rc, rl = 0;
   sqlite3_stmt *npersonstmt;
-  sqlite3_int64 ans = 0;
+  //sqlite3_int64 ans = 0;
   
   
   rl++;
@@ -1533,6 +1533,53 @@ int modifynewperson(sqlite3_int64 personid, const char *bio,
   
   
 ErrModifyNewPerson:
+  lastdberr = rc;
+  lastdberl = rl;
+  return 0;
+}
+
+int deletedate(sqlite3_int64 dateid)
+{
+  lastdberr = 0;
+  lastdberl = 0;
+  unsetdberrtext();
+  if (!dbisopen) return 0;
+  
+  int rc, rl = 0;
+  sqlite3_stmt *ddatestmt;
+  //sqlite3_int64 ans = 0;
+  
+  rl++;
+  if (!dateid)
+  {
+    setdberrtext("DateID must be specified!");
+    goto ErrDeleteDate;
+  }
+  
+  rl++;
+  rc = sqlite3_prepare_v2(db, sql_delete_date, -1, &ddatestmt, NULL);
+  if (rc != SQLITE_OK) goto ErrDeleteDate;
+  
+  rl++;
+  rc = sqlite3_bind_int64(ddatestmt, 1, dateid);
+  if (rc != SQLITE_OK) goto ErrDeleteDate;
+  
+  rl++;
+  rc = sqlite3_step(ddatestmt);
+  if (rc != SQLITE_ROW && rc != SQLITE_DONE && rc != SQLITE_OK)
+  {
+    setdberrtext(sqlite3_errmsg(db));
+    goto ErrDeleteDate;
+  }
+  
+  rl++;
+  if (sqlite3_finalize(ddatestmt) != SQLITE_OK) goto ErrDeleteDate;
+  
+  /* --Return-- */
+  return 1;
+  
+  
+ErrDeleteDate:
   lastdberr = rc;
   lastdberl = rl;
   return 0;

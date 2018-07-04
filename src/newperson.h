@@ -14,6 +14,8 @@ int newperson_baddrnatgl_action_cb(Ihandle *baddrnatgl, int state);
 int newperson_dalivetgl_action_cb(Ihandle *dalivetgl, int state);
 int newperson_dplaceunktgl_action_cb(Ihandle *dplaceunktgl, int state);
 int newperson_daddrnatgl_action_cb(Ihandle *daddrnatgl, int state);
+
+int newperson_okbtn_action_cb(Ihandle *ih);
 int newperson_cancelbtn_action_cb(Ihandle *ih);
 int newperson_helpbtn_action_cb(Ihandle *ih);
 

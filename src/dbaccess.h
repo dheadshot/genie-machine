@@ -40,6 +40,7 @@ int modifynewperson(sqlite3_int64 personid, const char *bio,
                     int usedaddr, sqlite3_int64 daddrid, 
                     sqlite3_int64 dageid, int usesource, 
                     sqlite3_int64 sourceid);
+int deletedate(sqlite3_int64 dateid);
 
 
 #ifndef __DBACCESS_DECLARE__

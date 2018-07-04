@@ -267,6 +267,11 @@ int newperson_okbtn_action_cb(Ihandle *ih)
   Ihandle *bdateeditbtn = IupGetDialogChild(dlg, "BIRTH_DATE_EDIT_BTN");
   Ihandle *bplacetxt = IupGetDialogChild(dlg, "BIRTH_PLACE_TXT");
   Ihandle *bplaceunktgl = IupGetDialogChild(dlg, "BIRTH_PLACE_UNKNOWN_TGL");
+  Ihandle *dalivetgl = IupGetDialogChild(dlg, "DEATH_ALIVE_TGL");
+  Ihandle *ddateeditbtn = IupGetDialogChild(dlg, "DEATH_DATE_EDIT_BTN");
+  Ihandle *dplacetxt = IupGetDialogChild(dlg, "DEATH_PLACE_TXT");
+  Ihandle *dplaceunktgl = IupGetDialogChild(dlg, "DEATH_PLACE_UNKNOWN_TGL");
+  Ihandle *dageeditbtn = IupGetDialogChild(dlg, "DEATH_AGE_EDIT_BTN");
   
   //CSex
   Ihandle *csexactive = IupGetAttributeHandle(csexrbox, "VALUE_HANDLE");
@@ -297,10 +302,51 @@ int newperson_okbtn_action_cb(Ihandle *ih)
   }
   
   //BPlace
+  if (IupGetInt(bplaceunktgl, "VALUE") == 0 && sstrlen(IupGetAttribute(bplacetxt, "VALUE")) == 0)
+  {
+    show_error("Birth Place not specified!  If you don't know the place of the person's birth, select the \"Unknown Birth Place\" box.", 1, NULL, dlg);
+    IupSetFocus(bplaceunktgl);
+    return IUP_IGNORE;
+  }
   
+  //Death
+  if (IupGetInt(dalivetgl, "VALUE") == 0)
+  {
+    //DDate
+    sqlite3_int64 *ddateref = (sqlite3_int64 *) IupGetAttribute(dlg, "DDATE_VALUE");
+    sqlite3_int64 ddate = 0;
+    if (ddateref && (*ddateref)) ddate = (*ddateref);
+    if (!ddate)
+    {
+      show_error("Death Date not set!  You must specify a death date for any person without the \"Still Alive\" box selected.", 1, NULL, dlg);
+      IupSetFocus(ddateeditbtn);
+      return IUP_IGNORE;
+    }
+    
+    //DPlace
+    if (IupGetInt(dplaceunktgl, "VALUE") == 0 && sstrlen(IupGetAttribute(dplacetxt, "VALUE")) == 0)
+    {
+      show_error("Death Place not specified!  If you don't know the place of the person's death, select the \"Unknown Death Place\" box.  If the person has not yet died, select the \"Still Alive\" box.", 1, NULL, dlg);
+      IupSetFocus(dplaceunktgl);
+      return IUP_IGNORE;
+    }
+    
+    //DAge
+    sqlite3_int64 *dageref = (sqlite3_int64 *) IupGetAttribute(dlg, "DAGE_VALUE");
+    sqlite3_int64 dage = 0;
+    if (dageref && (*dageref)) dage = (*dageref);
+    if (!dage)
+    {
+      show_error("Death Age not set!  You must specify an age at death for any person without the \"Still Alive\" box selected.", 1, NULL, dlg);
+      IupSetFocus(dageeditbtn);
+      return IUP_IGNORE;
+    }
+  }
   
-  /* TODO: Finish this section */
-  
+  /* Close and Submit */
+  IupSetAttribute(dlg, "STATUS", "1");
+  IupSetAttribute(dlg, "CONFIG", NULL);
+  return IUP_CLOSE;
 }
 
 int newperson_cancelbtn_action_cb(Ihandle *ih)
@@ -797,7 +843,8 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   okbtn = IupButton("&OK", NULL);
   IupSetAttribute(okbtn, "NAME", "OK_BTN");
   IupSetAttribute(okbtn, "ACTIVE", "NO");
-  IupSetAttribute(okbtn, "PADDING", "10x2"); //TODO: CB This!
+  IupSetAttribute(okbtn, "PADDING", "10x2");
+  IupSetCallback(helpbtn, "ACTION", (Icallback) newperson_okbtn_action_cb);
   
   cancelbtn = IupButton("&Cancel", NULL);
   IupSetAttribute(cancelbtn, "NAME", "CANCEL_BTN");
@@ -828,25 +875,85 @@ sqlite3_int64 donewperson(Ihandle *parentdlg, Ihandle *config, const char *prevw
   
   IupSetAttribute(npdlg, "WINDOW_LIST", windowlist); //Remember to set to NULL at end, then free!
   
-  IupPopup(npdlg, IUP_CENTERPARENT, IUP_CENTERPARENT);
+  sqlite3_int64 rans = 0;
+  char *errmsg = NULL;
   
-  if (IupGetInt(npdlg, "STATUS"))
+  while (rans == 0) /* This is a dirty bodge but should solve issues */
   {
-    //OK
-    if (newperson_personid)
+    IupPopup(npdlg, IUP_CENTERPARENT, IUP_CENTERPARENT);
+    
+    if (IupGetInt(npdlg, "STATUS"))
     {
-      //Update
+      //OK
+      if (newperson_personid)
+      {
+        //Update
+        rans = addorupdaterecord(npdlg, newperson_personid);
+      }
+      else
+      {
+        //Create
+        rans = addorupdaterecord(npdlg, 0);
+      }
+      if (rans) newperson_personid = rans;
     }
     else
     {
-      //Create
+      
+      if (newperson_personid)
+      {
+        rans = -1;
+        
+        //Delete record data for person and any names
+      }
     }
   }
-  else if (newperson_personid)
-  {
-    //Delete record data
-  }
   
+  /* -------------------- */
+  /* TODO: Sort this code out!
+  
+  //Delete unneeded record data for (sqlite3_int64*)s!
+      // Delete BDate
+      sqlite3_int64 *del_bdateref = (sqlite3_int64 *) IupGetAttribute(dlg, "BDATE_VALUE");
+      if (del_bdateref && (*del_bdateref))
+      {
+        if (!deletedate(*del_bdateref))
+        {
+          if (lastdberrtext)
+          {
+            errmsg = (char *) malloc(sizeof(char)*(101+strlen(lastdberrtext)));
+            if (!errmsg) show_error("Error removing \"birth date\" data! Additionally, error processing the error!", 1, NULL, dlg);
+            else
+            {
+              sprintf(errmsg, "There was the following error removing \"birth date\" data: (%lu:%lu) %s", getlastdberr(), lastdberl, lastdberrtext);
+              show_error(errmsg, 1, "Database Error", dlg);
+              	fprintf(stderr, errmsg);
+              free(errmsg);
+            }
+          }
+          else
+          {
+            errmsg = (char *) malloc(sizeof(char)*101);
+            if (!errmsg) show_error("Error removing \"birth date\" data! Additionally, error processing the error!", 1, NULL, dlg);
+            else
+            {
+              sprintf(errmsg, "There was an error %lu:%lu removing \"birth date\" data!", getlastdberr(), lastdberl);
+              show_error(errmsg, 1, "Database Error", dlg);
+              	fprintf(stderr, errmsg);
+              free(errmsg);
+            }
+          }
+        }
+      }
+      
+      // Delete BAddr
+      
+      // Delete DDate
+    }
+  */
+  /* -------------------- */
+  
+  //Free the return (sqlite3_int64*)s
   
   IupSetAttribute(npdlg, "CONFIG", NULL);
   IupSetAttribute(npdlg, "WINDOW_LIST", NULL);

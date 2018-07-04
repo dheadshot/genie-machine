@@ -110,6 +110,8 @@ extern char sql_insert_newperson[];
 
 extern char sql_update_newperson[];
 
+extern char sql_delete_date[];
+
 
 #endif
 

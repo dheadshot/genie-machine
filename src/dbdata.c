@@ -8178,3 +8178,6 @@ char sql_insert_newperson[] = "INSERT INTO Person (PersonID, Bio, Ethnicity, Sex
 
 /* Update Data */
 char sql_update_newperson[] = "UPDATE Person SET Bio = ?, Ethnicity = ?, Sex = ?, Gender = ?, Notes = ?, ChildOfRelID = ?, IsAdopted = ?, BirthDate = ?, BirthPlace = ?, BirthAddrID = ?, DeathDate = ?, DeathPlace = ?, DeathAddrID = ?, DeathAge = ?, SourceID = ? WHERE PersonID = ?;";
+
+/* Delete Data */
+char sql_delete_date[] = "DELETE FROM Date WHERE Date.DateID = ?;";
